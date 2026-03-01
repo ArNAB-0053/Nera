@@ -40,5 +40,14 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"],
+      "@prisma": ["prisma/prisma.ts"],
+      "@modules/*": ["modules/*"],
+      "@config/*": ["config/*"]
+    }
+
   }
 }
