@@ -16,3 +16,6 @@ apps/backend/.env*
 apps/frontend/.env*
 packages/.env*
 docker/.env*
+
+# Prisma generated
+packages/db/src/generated/

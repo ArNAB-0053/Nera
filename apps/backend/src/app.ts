@@ -3,6 +3,7 @@ import cors from "@fastify/cors"
 import helmet from "@fastify/helmet"
 import { registerModules } from "./modules/index.js";
 import jwtPlugin from "./plugins/jwt.plugin.js";
+import replyPlugin from "./plugins/reply.plugin.js";
 
 const app = Fastify({
   logger: true
@@ -11,6 +12,7 @@ const app = Fastify({
 app.register(cors)
 app.register(helmet)
 app.register(jwtPlugin) 
+app.register(replyPlugin);
 
 app.setErrorHandler((error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
   request.log.error(error);
