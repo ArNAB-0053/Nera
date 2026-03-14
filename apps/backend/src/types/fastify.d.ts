@@ -8,8 +8,8 @@ declare module "fastify" {
 
 declare module "fastify" {
   interface FastifyReply {
-    ok(data?: unknown): void;
-    created(data?: unknown): void;
+    ok(data?: unknown, message?: string): void;
+    created(data?: unknown, message?: string): void;
   }
 }
 

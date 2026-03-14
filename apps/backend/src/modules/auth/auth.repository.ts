@@ -1,5 +1,6 @@
 import { prisma } from "@/prisma/prisma.js";
 import type { CreateUserData } from "./auth.schema.js";
+import type { RefreshToken, RefreshTokenInputType } from "@nera/db";
 
 export const authRepository = {
     createUser(data: CreateUserData) {
@@ -10,7 +11,43 @@ export const authRepository = {
                 ...(data.username !== undefined && { username: data.username }),
             }
         });
-    }
+    },
 
-    // getUser
+    findAuthUserByIdentifier(identifier: string) {
+        const isEmail = identifier.includes("@")
+
+        return prisma.user.findUnique({
+            where: isEmail
+                ? { email: identifier }
+                : { username: identifier },
+            select: {
+                id: true,
+                email: true,
+                username: true,
+                passwordHash: true
+            }
+        })
+    },
+
+    createRefreshToken(data: RefreshTokenInputType) {
+        return prisma.refreshToken.create({
+            data
+        })
+    },
+
+    findRefreshTokensByUser(userId: string) {
+        return prisma.refreshToken.findMany({
+            where: {
+                userId,
+                revoked: false
+            }
+        })
+    },
+
+    refreshToken(id: string) {
+        return prisma.refreshToken.update({
+            where: {id},
+            data: {revoked: true}
+        })
+    }
 }

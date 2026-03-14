@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { findByEmail, findByUsername, getMe } from "./user.controller.js";
+import { findByUsername, getMe } from "./user.controller.js";
 
 export const USER_PREFIX = "/user";
 

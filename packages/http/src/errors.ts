@@ -4,6 +4,8 @@ export class AppError extends Error {
   constructor(message: string, statusCode = 500) {
     super(message);
     this.statusCode = statusCode;
+
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 
@@ -24,3 +26,4 @@ export class BadRequestError extends AppError {
     super(message, 400);
   }
 }
+
