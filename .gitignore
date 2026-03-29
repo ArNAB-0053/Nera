@@ -19,3 +19,9 @@ docker/.env*
 
 # Prisma generated
 packages/db/src/generated/
+
+# Generated schema build output
+packages/schemas/dist/
+
+dist
+node_modules

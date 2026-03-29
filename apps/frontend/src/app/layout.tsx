@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@nera/ui";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
-import { QueryProvider } from "@/components/providers/query-provider";
+import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 
 const sans = Space_Grotesk({

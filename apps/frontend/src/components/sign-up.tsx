@@ -2,28 +2,15 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { RegisterSchema } from "@nera/schemas";
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import { Button, Surface, Text } from "@nera/ui";
-import { useRouter } from "next/navigation";
-import { getApiErrorMessage, registerUser } from "@/lib/api";
+import { useCreateAccount } from "@/services/auth";
 
 const SignUp = () => {
   const [form, setForm] = useState({ email: "", username: "", password: "" });
   const [message, setMessage] = useState("");
-  const router = useRouter();
-
-  const registerMutation = useMutation({
-    mutationFn: registerUser,
-    onSuccess: (response) => {
-      setMessage(response.message);
-      router.push("/sign-in");
-    },
-    onError: (error) => {
-      setMessage(getApiErrorMessage(error));
-    },
-  });
+  const registerMutation = useCreateAccount(setMessage);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });

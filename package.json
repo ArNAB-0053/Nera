@@ -1,4 +1,7 @@
 {
   "name": "nera",
-  "private": true
+  "private": true,
+  "scripts": {
+    "postinstall": "pnpm --filter @nera/schemas build"
+  }
 }

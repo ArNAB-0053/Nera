@@ -1,8 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useDeferredValue, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
   Check,
@@ -14,15 +10,6 @@ import {
   Workflow,
 } from "lucide-react";
 import { Button, Surface, Text, ThemeToggle } from "@nera/ui";
-import {
-  createTest,
-  getApiErrorMessage,
-  getCurrentUser,
-  getTests,
-  getUserByUsername,
-  queryKeys,
-  refreshSession,
-} from "@/lib/api";
 
 const features = [
   {
@@ -70,44 +57,6 @@ const comparisonRows = [
 ];
 
 export default function HomePage() {
-  const [usernameLookup, setUsernameLookup] = useState("demo");
-  const [testName, setTestName] = useState("");
-  const deferredUsername = useDeferredValue(usernameLookup.trim());
-  const queryClient = useQueryClient();
-
-  const meQuery = useQuery({
-    queryKey: queryKeys.me,
-    queryFn: getCurrentUser,
-    retry: false,
-  });
-
-  const testsQuery = useQuery({
-    queryKey: queryKeys.tests,
-    queryFn: getTests,
-  });
-
-  const usernameQuery = useQuery({
-    queryKey: queryKeys.userByUsername(deferredUsername),
-    queryFn: () => getUserByUsername(deferredUsername),
-    enabled: deferredUsername.length >= 3,
-    retry: false,
-  });
-
-  const refreshMutation = useMutation({
-    mutationFn: refreshSession,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.me });
-    },
-  });
-
-  const createTestMutation = useMutation({
-    mutationFn: createTest,
-    onSuccess: async () => {
-      setTestName("");
-      await queryClient.invalidateQueries({ queryKey: queryKeys.tests });
-    },
-  });
-
   return (
     <main className="relative overflow-hidden pb-16">
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/82 backdrop-blur-xl">
@@ -400,119 +349,6 @@ export default function HomePage() {
       </section>
 
       <section className="container-shell section-shell">
-        <div className="mb-10 max-w-2xl space-y-4">
-          <Text as="p" variant="label">
-            Backend connection
-          </Text>
-          <Text as="h2" variant="h2" tone="foreground">
-            Frontend now talks to auth, user, and test APIs through TanStack Query plus Axios.
-          </Text>
-          <Text as="p" variant="body">
-            This keeps the integration visible and gives us a small live surface to verify request flow without rebuilding the whole product.
-          </Text>
-        </div>
-
-        <div className="grid gap-5 lg:grid-cols-3">
-          <Surface variant="elevated" padding="lg" className="panel-outline interactive-panel space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <Text as="h3" variant="h3" tone="foreground">
-                Session
-              </Text>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => refreshMutation.mutate()}
-                disabled={refreshMutation.isPending}
-              >
-                {refreshMutation.isPending ? "Refreshing..." : "Refresh"}
-              </Button>
-            </div>
-            <Text as="p" variant="muted">
-              {meQuery.isSuccess
-                ? `Signed in as ${meQuery.data.data.email}`
-                : meQuery.isError
-                  ? getApiErrorMessage(meQuery.error)
-                  : "Checking current user..."}
-            </Text>
-            <Text as="p" variant="body">
-              {refreshMutation.isError
-                ? getApiErrorMessage(refreshMutation.error)
-                : refreshMutation.isSuccess
-                  ? refreshMutation.data.message
-                  : "Uses /api/auth/refresh and /api/user/me."}
-            </Text>
-          </Surface>
-
-          <Surface variant="elevated" padding="lg" className="panel-outline interactive-panel space-y-4">
-            <Text as="h3" variant="h3" tone="foreground">
-              Find user
-            </Text>
-            <input
-              value={usernameLookup}
-              onChange={(event) => setUsernameLookup(event.target.value)}
-              placeholder="Search username"
-              className="field-input"
-            />
-            <Text as="p" variant="body">
-              {deferredUsername.length < 3
-                ? "Enter at least 3 characters."
-                : usernameQuery.isSuccess
-                  ? usernameQuery.data.data.username || usernameQuery.data.data.email
-                  : usernameQuery.isError
-                    ? getApiErrorMessage(usernameQuery.error)
-                    : "Looking up user..."}
-            </Text>
-            <Text as="p" variant="muted">
-              Powered by `/api/user/:username`.
-            </Text>
-          </Surface>
-
-          <Surface variant="elevated" padding="lg" className="panel-outline interactive-panel space-y-4">
-            <Text as="h3" variant="h3" tone="foreground">
-              Test records
-            </Text>
-            <form
-              className="space-y-3"
-              onSubmit={(event) => {
-                event.preventDefault();
-                if (!testName.trim()) return;
-                createTestMutation.mutate({ name: testName.trim() });
-              }}
-            >
-              <input
-                value={testName}
-                onChange={(event) => setTestName(event.target.value)}
-                placeholder="Add test name"
-                className="field-input"
-              />
-              <Button type="submit" size="sm" disabled={createTestMutation.isPending}>
-                {createTestMutation.isPending ? "Saving..." : "Create test"}
-              </Button>
-            </form>
-            <div className="space-y-2">
-              {testsQuery.isSuccess ? (
-                testsQuery.data.slice(0, 3).map((test) => (
-                  <div key={test.id} className="rounded-[var(--radius-xl)] border border-border/60 bg-background/60 px-4 py-3">
-                    <Text as="p" variant="body" tone="foreground">
-                      {test.name}
-                    </Text>
-                    <Text as="p" variant="muted">
-                      {new Date(test.createdAt).toLocaleString()}
-                    </Text>
-                  </div>
-                ))
-              ) : (
-                <Text as="p" variant="muted">
-                  {testsQuery.isError ? getApiErrorMessage(testsQuery.error) : "Loading test records..."}
-                </Text>
-              )}
-            </div>
-          </Surface>
-        </div>
-      </section>
-
-      <section className="container-shell section-shell">
         <Surface
           variant="soft"
           padding="lg"
@@ -523,12 +359,12 @@ export default function HomePage() {
               Ready to launch
             </Text>
             <Text as="h2" variant="h2" tone="foreground">
-              Start with a cleaner first impression, then reuse the same UI language across the product.
+              Establish a secure workspace for your most sensitive files with a vault built for privacy, control, and long-term trust.
             </Text>
           </div>
           <Button asChild size="lg">
             <Link href="/sign-up">
-              Open your first vault
+              Create your secure vault
               <ArrowRight className="size-4" />
             </Link>
           </Button>

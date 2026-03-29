@@ -2,30 +2,15 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoginSchema } from "@nera/schemas";
 import { ArrowRight, KeyRound, ShieldCheck } from "lucide-react";
 import { Button, Surface, Text } from "@nera/ui";
-import { useRouter } from "next/navigation";
-import { getApiErrorMessage, loginUser, queryKeys } from "@/lib/api";
+import { useCreateSession } from "@/services/auth";
 
 const SignIn = () => {
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [message, setMessage] = useState("");
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
-  const loginMutation = useMutation({
-    mutationFn: loginUser,
-    onSuccess: async (response) => {
-      setMessage(response.message);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
-      router.push("/");
-    },
-    onError: (error) => {
-      setMessage(getApiErrorMessage(error));
-    },
-  });
+  const loginMutation = useCreateSession(setMessage);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
