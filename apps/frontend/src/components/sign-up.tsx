@@ -2,12 +2,28 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { RegisterSchema } from "@nera/schemas";
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import { Button, Surface, Text } from "@nera/ui";
+import { useRouter } from "next/navigation";
+import { getApiErrorMessage, registerUser } from "@/lib/api";
 
 const SignUp = () => {
   const [form, setForm] = useState({ email: "", username: "", password: "" });
   const [message, setMessage] = useState("");
+  const router = useRouter();
+
+  const registerMutation = useMutation({
+    mutationFn: registerUser,
+    onSuccess: (response) => {
+      setMessage(response.message);
+      router.push("/sign-in");
+    },
+    onError: (error) => {
+      setMessage(getApiErrorMessage(error));
+    },
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -16,18 +32,19 @@ const SignUp = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
+    const payload = {
+      email: form.email,
+      password: form.password,
+      ...(form.username.trim() ? { username: form.username.trim() } : {}),
+    };
+    const parsed = RegisterSchema.safeParse(payload);
 
-    try {
-      const res = await fetch("http://localhost:4000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      setMessage(JSON.stringify(data, null, 2));
-    } catch (err) {
-      setMessage("Error: " + err);
+    if (!parsed.success) {
+      setMessage(parsed.error.issues[0]?.message ?? "Please check your details.");
+      return;
     }
+
+    await registerMutation.mutateAsync(parsed.data);
   };
 
   return (
@@ -99,8 +116,8 @@ const SignUp = () => {
                 />
               </div>
 
-              <Button type="submit" size="lg" className="w-full">
-                Create account
+              <Button type="submit" size="lg" className="w-full" disabled={registerMutation.isPending}>
+                {registerMutation.isPending ? "Creating account..." : "Create account"}
                 <ArrowRight className="size-4" />
               </Button>
             </form>
@@ -115,9 +132,11 @@ const SignUp = () => {
             {message && (
               <Surface variant="soft" padding="md" className="rounded-[var(--radius-xl)] animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <Text as="p" variant="label">
-                  Server response
+                  Status
                 </Text>
-                <pre className="mt-3 overflow-x-auto text-sm leading-6 text-muted-foreground">{message}</pre>
+                <Text as="p" variant="body" className="mt-3">
+                  {message}
+                </Text>
               </Surface>
             )}
           </div>

@@ -2,12 +2,30 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { LoginSchema } from "@nera/schemas";
 import { ArrowRight, KeyRound, ShieldCheck } from "lucide-react";
 import { Button, Surface, Text } from "@nera/ui";
+import { useRouter } from "next/navigation";
+import { getApiErrorMessage, loginUser, queryKeys } from "@/lib/api";
 
 const SignIn = () => {
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [message, setMessage] = useState("");
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const loginMutation = useMutation({
+    mutationFn: loginUser,
+    onSuccess: async (response) => {
+      setMessage(response.message);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+      router.push("/");
+    },
+    onError: (error) => {
+      setMessage(getApiErrorMessage(error));
+    },
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -16,19 +34,14 @@ const SignIn = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
+    const parsed = LoginSchema.safeParse(form);
 
-    try {
-      const res = await fetch("http://localhost:4000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      setMessage(JSON.stringify(data, null, 2));
-    } catch (err) {
-      setMessage("Error: " + err);
+    if (!parsed.success) {
+      setMessage(parsed.error.issues[0]?.message ?? "Please enter your credentials.");
+      return;
     }
+
+    await loginMutation.mutateAsync(parsed.data);
   };
 
   return (
@@ -131,8 +144,8 @@ const SignIn = () => {
                 />
               </div>
 
-              <Button type="submit" size="lg" className="w-full">
-                Sign in
+              <Button type="submit" size="lg" className="w-full" disabled={loginMutation.isPending}>
+                {loginMutation.isPending ? "Signing in..." : "Sign in"}
                 <ArrowRight className="size-4" />
               </Button>
             </form>
@@ -164,9 +177,11 @@ const SignIn = () => {
             {message && (
               <Surface variant="soft" padding="md" className="rounded-[var(--radius-xl)] animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <Text as="p" variant="label">
-                  Server response
+                  Status
                 </Text>
-                <pre className="mt-3 overflow-x-auto text-sm leading-6 text-muted-foreground">{message}</pre>
+                <Text as="p" variant="body" className="mt-3">
+                  {message}
+                </Text>
               </Surface>
             )}
           </div>
