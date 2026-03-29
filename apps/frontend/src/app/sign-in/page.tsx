@@ -1,12 +1,7 @@
-import SignIn from '@/components/sign-in'
-import React from 'react'
+import SignIn from "@/components/sign-in";
 
-const page = () => {
-  return (
-    <div className='p-4'>
-      <SignIn/>
-    </div>
-  )
-}
+const Page = () => {
+  return <SignIn />;
+};
 
-export default page
+export default Page;
