@@ -7,6 +7,7 @@ import replyPlugin from "./plugins/reply.plugin.js";
 import cookiePlugin from "./plugins/cookie.plugin.js";
 import { AppError } from "@nera/http";
 import { env } from "./config/env.js";
+import multipart from "@fastify/multipart";
 
 const app = Fastify({
   logger: true
@@ -17,6 +18,7 @@ app.register(cors, {
   origin: env.APP_URL,
   credentials: true,
 })
+app.register(multipart);
 app.register(helmet)
 app.register(jwtPlugin) 
 app.register(replyPlugin);

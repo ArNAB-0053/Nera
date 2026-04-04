@@ -68,11 +68,20 @@ model File {
   storagePath String
   mimeType String?
 
+  // security
+  isEncrypted Boolean @default(true)
+  encryptionIv String?
+  encryptionTag String?
+
+  // soft delete
+  isDeleted Boolean @default(false)
+  deletedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  folder Folder? @relation(fields: [folderId], references: [id])
+  folder Folder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([folderId])
@@ -86,15 +95,21 @@ model Folder {
   userId String
 
   name String
-  parentId String?
+  parentId String? // Only root folder can be null
+
+  isRoot Boolean @default(false)
 
   size BigInt @default(0)
+
+  // soft delete
+  isDeleted Boolean @default(false)
+  deletedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent Folder? @relation("FolderHierarchy", fields: [parentId], references: [id])
+  parent Folder? @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children Folder[] @relation("FolderHierarchy")
 
   files File[]

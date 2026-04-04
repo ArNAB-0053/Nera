@@ -1,4 +1,5 @@
 import { prisma } from "@/prisma/prisma.js"
+import type { IUserRepository } from "./user.schema.js";
 
 const PUBLIC_USER_SELECT = {
   id: true,
@@ -9,7 +10,7 @@ const PUBLIC_USER_SELECT = {
   updatedAt: true,
 } as const;
 
-export const userRepository = {
+export const userRepository : IUserRepository = {
     findById(id: string) {
         return prisma.user.findUnique({
             where: {id},

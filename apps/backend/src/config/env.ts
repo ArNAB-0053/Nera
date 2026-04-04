@@ -11,4 +11,5 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET || "my-secret-jwt",
   NODE_ENV: process.env.NODE_ENV || "development",
   APP_URL: process.env.APP_URL!,
+  ENCRYPTION_SECRET: process.env.ENCRYPTION_SECRET!,
 };

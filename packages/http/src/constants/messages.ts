@@ -14,7 +14,12 @@ export const MESSAGES = {
     INVALID_CREDENTIALS: "Invalid credentials",
     PASSWORD_NOT_MATCH: "Password didn't match",
     USER_NOT_FOUND: "User not found",
-    PROFILE_FETCH_FAILED: "Unable to fetch your profile"
-  }
+    PROFILE_FETCH_FAILED: "Unable to fetch your profile",
+
+    // File
+    FILE_NEEDED: 'File is required',
+    FILE_LARGE: 'File too large',
+    INVALID_FILE_TYPE: 'Invalid file type'
+  },
 
 } as const;

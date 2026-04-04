@@ -1,8 +1,8 @@
 import { prisma } from "@/prisma/prisma.js";
-import type { CreateUserData } from "./auth.schema.js";
-import type { RefreshToken, RefreshTokenInputType } from "@nera/db";
+import type { CreateUserData, IAutoRepository } from "./auth.schema.js";
+import type { RefreshTokenInputType } from "@nera/db";
 
-export const authRepository = {
+export const authRepository: IAutoRepository = {
     createUser(data: CreateUserData) {
         return prisma.user.create({
             data: {
