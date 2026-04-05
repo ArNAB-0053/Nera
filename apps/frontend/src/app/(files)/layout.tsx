@@ -1,16 +1,10 @@
-import React from 'react'
+import type { ReactNode } from "react";
+import { FilesLayoutShell } from "@/components/file-manager/files-layout-shell";
 
-const FilesLayout = ({
+export default function FilesLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
-}>)  => {
-  return (
-    <div>
-        {/* sidebar */}
-      {children}
-    </div>
-  )
+  children: ReactNode;
+}>) {
+  return <FilesLayoutShell>{children}</FilesLayoutShell>;
 }
-
-export default FilesLayout

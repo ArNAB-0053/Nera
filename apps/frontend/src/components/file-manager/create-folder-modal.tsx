@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Text } from "@nera/ui";
 import { getApiErrorMessage } from "@/services/base";
@@ -68,7 +68,7 @@ export function CreateFolderModal({
             <Input
               id="folder-name"
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => setName(event.target.value)}
               placeholder="Quarterly Reports"
               autoFocus
             />

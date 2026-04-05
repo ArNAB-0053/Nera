@@ -4,11 +4,7 @@ import { Clock3, FolderOpen, Pin, ShieldCheck, Trash2 } from "lucide-react";
 import { Text } from "@nera/ui";
 import { SidebarItem } from "./sidebar-item";
 
-type SidebarProps = {
-  onOpenRoot: () => void;
-};
-
-export function Sidebar({ onOpenRoot }: SidebarProps) {
+export function Sidebar() {
   return (
     <aside className="border-r border-border/50 px-5 py-6">
       <div className="flex flex-col gap-8">
@@ -22,10 +18,10 @@ export function Sidebar({ onOpenRoot }: SidebarProps) {
         </div>
 
         <nav className="flex flex-col gap-1">
-          <SidebarItem icon={FolderOpen} label="My Files" active onClick={onOpenRoot} />
-          <SidebarItem icon={Clock3} label="Recent" />
-          <SidebarItem icon={Pin} label="Pinned" />
-          <SidebarItem icon={Trash2} label="Trash" />
+          <SidebarItem href="/my-files" icon={FolderOpen} label="My Files" active />
+          <SidebarItem href="/recent" icon={Clock3} label="Recent" />
+          <SidebarItem href="/pinned" icon={Pin} label="Pinned" />
+          <SidebarItem href="/trash" icon={Trash2} label="Trash" />
         </nav>
       </div>
     </aside>
