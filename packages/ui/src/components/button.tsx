@@ -7,21 +7,23 @@ import { Slot } from "radix-ui";
 import { cn } from "../lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-pill)] border px-5 text-sm font-semibold shadow-[0_16px_36px_-24px_rgba(15,23,42,0.42)] transition-all duration-200 ease-out disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px [&_svg]:shrink-0",
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-pill)] border px-5 text-sm font-semibold shadow-[0_16px_36px_-24px_rgba(15,23,42,0.42)] transition-all duration-200 ease-out disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background [&_svg]:shrink-0 cursor-pointer",
   {
     variants: {
       variant: {
         primary:
-          "border-primary/90 bg-primary text-primary-foreground shadow-[0_18px_46px_-24px_color-mix(in_oklab,var(--primary)_65%,transparent)] hover:-translate-y-0.5 hover:bg-primary/92",
+          "border-primary/90 bg-primary text-primary-foreground shadow-[0_18px_46px_-24px_color-mix(in_oklab,var(--primary)_65%,transparent)] hover:-translate-y-0.5 hover:bg-primary/92 active:translate-y-px",
         secondary:
-          "border-border/80 bg-secondary text-secondary-foreground hover:-translate-y-0.5 hover:bg-secondary/82",
+          "border-border/80 bg-secondary text-secondary-foreground hover:-translate-y-0.5 hover:bg-secondary/82 active:translate-y-px",
         outline:
-          "border-border/80 bg-background/78 text-foreground backdrop-blur-sm hover:-translate-y-0.5 hover:border-primary/30 hover:bg-accent/78 hover:text-accent-foreground",
+          "border-border/80 bg-background/78 text-foreground backdrop-blur-sm hover:-translate-y-0.5 hover:border-primary/30 hover:bg-accent/78 hover:text-accent-foreground active:translate-y-px",
         ghost:
           "border-transparent bg-transparent text-foreground shadow-none hover:bg-accent hover:text-accent-foreground",
         hero: "border-primary/90 bg-primary text-primary-foreground shadow-[0_24px_60px_-28px_color-mix(in_oklab,var(--primary)_78%,transparent)] hover:-translate-y-1 hover:bg-primary/92",
+        icon: "border border-border/80 bg-background/78 shadow-none hover:bg-accent/80 backdrop-blur-lg"
       },
       size: {
+        xs: "h-7 px-2 text-xs",
         sm: "h-10 px-4 text-sm",
         md: "h-11 px-5 text-sm",
         lg: "h-12 px-6 text-base",

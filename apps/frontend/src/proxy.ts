@@ -3,12 +3,13 @@ import type { NextRequest } from "next/server";
 
 const AUTH_COOKIE = "access_token";
 const AUTH_PAGES = new Set(["/", "/sign-in", "/sign-up"]);
+const PROTECTED_PAGES = new Set(["/me", "/file"]);
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasAuthCookie = Boolean(request.cookies.get(AUTH_COOKIE)?.value);
 
-  if (pathname === "/me" && !hasAuthCookie) {
+  if (PROTECTED_PAGES.has(pathname) && !hasAuthCookie) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
@@ -20,5 +21,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/sign-in", "/sign-up", "/me"],
+  matcher: ["/", "/sign-in", "/sign-up", "/me", "/file"],
 };
