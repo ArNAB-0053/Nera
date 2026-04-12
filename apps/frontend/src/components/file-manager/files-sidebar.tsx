@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button, Text } from "@nera/ui";
-import { ChevronLeft, ChevronRight, Clock3, FolderOpen, Pin, ShieldCheck, Trash2 } from "lucide-react";
+import { Text, Tooltip, TooltipContent, TooltipTrigger } from "@nera/ui";
+import { Clock3, FolderOpen, HardDrive, Pin, ShieldCheck, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarItem } from "./sidebar-item";
 
@@ -18,9 +17,10 @@ const items = [
   { href: "/trash", label: "Trash", icon: Trash2 },
 ];
 
-export function FilesSidebar({ state}: FilesSidebarProps) {
+export function FilesSidebar({ state }: FilesSidebarProps) {
   const pathname = usePathname();
   const collapsed = state === "collapsed";
+  const storageUsage = 40;
 
   return (
     <div className="flex min-h-screen w-full flex-col justify-between px-3 py-4">
@@ -58,19 +58,64 @@ export function FilesSidebar({ state}: FilesSidebarProps) {
       </div>
 
       {!collapsed ? (
-        <div className="rounded-2xl border border-border/70 bg-background/55 px-3 py-3">
+        <div className="space-y-3">
+          <div>
+            <Text as="p" variant="label">
+              Storage
+            </Text>
+            <Text as="p" variant="body" tone="foreground" className="font-medium">
+              Workspace usage
+            </Text>
+          </div>
+
+          <div className="file-storage-progress">
+            <div className="file-storage-progress-bar" style={{ width: `${storageUsage}%` }} />
+          </div>
+
           <Text as="p" variant="muted">
-            Minimal navigation, shared layout, full-width workspace.
+            2.1 GB of 5 GB used
+          </Text>
+
+          <Text as="p" variant="muted" className="text-xs">
+            <strong>Note:</strong> Just for UI
           </Text>
         </div>
       ) : (
-        <Link
-          href="/my-files"
-          title="Back to My Files"
-          className="mx-auto flex size-10 items-center justify-center rounded-xl border border-border/70 bg-background/55 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        >
-          <FolderOpen className="size-4" />
-        </Link>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              aria-label="Storage usage details"
+              className="mx-auto flex size-10 items-center justify-center rounded-xl border border-border/70 bg-background/55 text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <HardDrive className="size-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" className="w-64 p-4">
+            <div className="space-y-3">
+              <div>
+                <Text as="p" variant="label">
+                  Storage
+                </Text>
+                <Text as="p" variant="body" tone="foreground" className="font-medium">
+                  Workspace usage
+                </Text>
+              </div>
+
+              <div className="file-storage-progress">
+                <div className="file-storage-progress-bar" style={{ width: `${storageUsage}%` }} />
+              </div>
+
+              <Text as="p" variant="muted">
+                2.1 GB of 5 GB used
+              </Text>
+
+              <Text as="p" variant="muted" className="text-xs">
+                <strong>Note:</strong> Just for UI
+              </Text>
+            </div>
+          </TooltipContent>
+        </Tooltip>
       )}
     </div>
   );

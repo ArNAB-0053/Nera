@@ -36,22 +36,31 @@ function Dropdown({ children }: DropdownProps) {
 }
 
 type DropdownTriggerProps = React.ComponentProps<"button"> & {
-  label: string;
+  label?: string;
+  showChevron?: boolean;
+  variant?: "normal" | "avatar"
 };
 
-function DropdownTrigger({ className, label, ...props }: DropdownTriggerProps) {
+function DropdownTrigger({
+  variant,
+  children,
+  className,
+  label,
+  showChevron = true,
+  ...props
+}: DropdownTriggerProps) {
   const { open, setOpen } = useDropdownContext();
 
   return (
     <button
       type="button"
-      className={cn("ui-dropdown-trigger", className)}
+      className={cn(variant === "avatar" ? "" : "ui-dropdown-trigger", className)}
       aria-expanded={open}
       onClick={() => setOpen(!open)}
       {...props}
     >
-      <span>{label}</span>
-      <ChevronDown className="ui-icon-sm" />
+      {children ?? <span>{label}</span>}
+      {showChevron ? <ChevronDown className="ui-icon-sm" /> : null}
     </button>
   );
 }

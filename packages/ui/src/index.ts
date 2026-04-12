@@ -1,4 +1,5 @@
 export * from "./components/button";
+export * from "./components/avatar";
 export * from "./components/dialog";
 export * from "./components/dropdown";
 export * from "./components/input";
@@ -7,4 +8,5 @@ export * from "./components/surface";
 export * from "./components/text";
 export * from "./components/theme-provider";
 export * from "./components/theme-toggle";
+export * from "./components/tooltip";
 export * from "./lib/utils";

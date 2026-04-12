@@ -197,6 +197,36 @@
   ::selection {
     background: color-mix(in oklab, var(--primary) 22%, transparent);
   }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--primary) 24%, var(--border)) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: color-mix(in oklab, var(--background) 88%, transparent);
+    border-radius: 999px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+    background-color: color-mix(in oklab, var(--muted-foreground) 26%, transparent);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in oklab, var(--primary) 32%, var(--muted-foreground));
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
 
 @layer components {
@@ -249,7 +279,7 @@
   }
 
   .ui-dropdown-content {
-    @apply absolute right-0 top-full z-30 mt-3 min-w-56 rounded-[var(--radius-xl)] border border-border/75 bg-surface-elevated p-2 shadow-[var(--shadow-soft)];
+    @apply absolute right-0 top-full z-30 mt-3 min-w-56 rounded-[var(--radius-xl)] border border-border/75 bg-surface-elevated p-2 shadow-[var(--shadow-soft)] backdrop-blur-xl;
   }
 
   .ui-dropdown-item {
@@ -278,6 +308,39 @@
 
   .ui-dialog-description {
     @apply text-[length:var(--text-body-sm)] leading-[var(--leading-body)] text-muted-foreground;
+  }
+
+  .ui-tooltip-content {
+    @apply z-50 max-w-72 rounded-[var(--radius-xl)] border border-border/75 !bg-surface-elevated px-3 py-2 text-[length:var(--text-body-sm)] leading-[var(--leading-body)] text-foreground shadow-[var(--shadow-soft)] backdrop-blur-xl outline-none;
+    transform-origin: var(--radix-tooltip-content-transform-origin);
+  }
+
+  .ui-tooltip-content[data-state="delayed-open"] {
+    @apply animate-in fade-in zoom-in-95 duration-200;
+  }
+
+  .ui-tooltip-content[data-state="closed"] {
+    @apply animate-out fade-out zoom-out-95 duration-150;
+  }
+
+  .ui-tooltip-content[data-side="top"] {
+    @apply slide-in-from-bottom-1;
+  }
+
+  .ui-tooltip-content[data-side="bottom"] {
+    @apply slide-in-from-top-1;
+  }
+
+  .ui-tooltip-content[data-side="left"] {
+    @apply slide-in-from-right-1;
+  }
+
+  .ui-tooltip-content[data-side="right"] {
+    @apply slide-in-from-left-1;
+  }
+
+  .ui-tooltip-arrow {
+    fill: color-mix(in oklab, var(--surface-elevated) 96%, transparent);
   }
 
   .ui-icon-sm {
@@ -451,6 +514,14 @@
     @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
     background: color-mix(in oklab, var(--success) 18%, transparent);
     color: var(--success);
+  }
+
+  .file-storage-progress {
+    @apply mt-2 h-2 w-full overflow-hidden rounded-full bg-muted;
+  }
+
+  .file-storage-progress-bar {
+    @apply h-full rounded-full bg-primary;
   }
 }
 

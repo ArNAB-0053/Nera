@@ -2,10 +2,11 @@
 
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { Button, Text } from "@nera/ui";
-import { ChevronLeft, ChevronRight, PanelLeft, PanelLeftClose } from "lucide-react";
+import { Button, Text, ThemeToggle } from "@nera/ui";
+import { ChevronLeft, PanelLeft, PanelLeftClose } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FilesSidebar } from "./files-sidebar";
+import { UserAvatarMenu } from "./user-avatar-menu";
 
 type SidebarState = "expanded" | "collapsed";
 
@@ -94,6 +95,11 @@ export function FilesLayoutShell({ children }: FilesLayoutShellProps) {
                 File Explorer
               </Text>
             </div>
+          </div>
+
+          <div className="flex items-center gap-x-4">
+            <ThemeToggle />
+            <UserAvatarMenu />
           </div>
         </div>
 

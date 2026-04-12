@@ -1,7 +1,7 @@
 import { LoginSchema, RegisterSchema } from "@nera/schemas";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { authService } from "./auth.service.js";
-import { ACCESS_COOKIE_OPTIONS, jwtSign, setAuthCookie, setCookies } from "@/helpers/auth-cookie.js";
+import { ACCESS_COOKIE_OPTIONS, clearAuthCookie, jwtSign, setAuthCookie, setCookies } from "@/helpers/auth-cookie.js";
 import { hashValue } from "@/helpers/crypto.js";
 import { authRepository } from "./auth.repository.js";
 import { COOKIE_TITLE } from "@/helpers/base.helper.js";
@@ -60,4 +60,9 @@ export async function refresh(request:FastifyRequest, reply: FastifyReply) {
 
     reply.ok({message: "Access Token Updated"})
     
+}
+
+export async function logout(_request: FastifyRequest, reply: FastifyReply) {
+    clearAuthCookie(reply)
+    return reply.ok({ message: "Logged out" }, "Logged out successfully")
 }

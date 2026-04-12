@@ -22,6 +22,10 @@ export type RefreshPayload = {
   message: string;
 };
 
+export type LogoutPayload = {
+  message: string;
+};
+
 export async function registerUser(payload: RegisterPayload) {
   const { data } = await axiosInstance.post<ApiSuccess<PublicUser>>("/api/auth/register", payload);
   return data;
@@ -34,6 +38,11 @@ export async function loginUser(payload: LoginPayload) {
 
 export async function refreshSession() {
   const { data } = await axiosInstance.post<ApiSuccess<RefreshPayload>>("/api/auth/refresh");
+  return data;
+}
+
+export async function logoutUser() {
+  const { data } = await axiosInstance.post<ApiSuccess<LogoutPayload>>("/api/auth/logout");
   return data;
 }
 
@@ -74,6 +83,17 @@ export function useCreateSessionRefresh() {
 
   return useMutation({
     mutationFn: refreshSession,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+    },
+  });
+}
+
+export function useLogoutSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: logoutUser,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.me });
     },
