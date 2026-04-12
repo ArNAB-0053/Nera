@@ -52,6 +52,24 @@ export const fileRepository: IFileRepository = {
     });
   },
 
+  softDeleteFileWithStorageUpdate({ userId, fileId, fileSize }) {
+    return prisma.$transaction(async (tx) => {
+      await tx.file.update({
+        where: { id: fileId },
+        data: {
+          isDeleted: true,
+          deletedAt: new Date(),
+        },
+      });
+
+      await tx.$executeRaw`
+        UPDATE "users"
+        SET "totalStorageUsed" = GREATEST("totalStorageUsed" - ${fileSize}, 0)
+        WHERE "id" = ${userId}
+      `;
+    });
+  },
+
   findFileById(id: string, userId: string) {
     return prisma.file.findFirst({
       where: {

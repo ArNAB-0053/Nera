@@ -128,5 +128,22 @@ export const fileServices = {
             mimeType: file.mimeType,
             name: file.name,
         };
+    },
+
+    async deleteFile(userId: string, fileId: string) {
+        const file = await repo.findFileById(fileId, userId)
+
+        if (!file) throw new NotFoundError(MESSAGES.error.FILE_NOT_FOUND)
+
+        await deleteObject(file.storagePath);
+        await repo.softDeleteFileWithStorageUpdate({
+            userId,
+            fileId: file.id,
+            fileSize: file.size,
+        });
+
+        return {
+            id: file.id,
+        };
     }
 }

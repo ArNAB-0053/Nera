@@ -34,6 +34,11 @@ export interface IFileRepository {
         fileSize: bigint;
         data: CreateFileData;
     }): Promise<PrismaFile>;
+    softDeleteFileWithStorageUpdate(input: {
+        userId: string;
+        fileId: string;
+        fileSize: bigint;
+    }): Promise<void>;
     findFileById(id: string, userId: string): Promise<PrismaFile | null>;
     findFilesByFolder(input: {
         userId: string;

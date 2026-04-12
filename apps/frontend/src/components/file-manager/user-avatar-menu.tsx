@@ -36,7 +36,11 @@ function getAvatarInitials(displayName: string) {
   return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 }
 
-export function UserAvatarMenu() {
+type UserAvatarMenuProps = {
+  showLabel?: boolean;
+};
+
+export function UserAvatarMenu({ showLabel = true }: UserAvatarMenuProps) {
   const router = useRouter();
   const meQuery = useGetCurrentUser();
   const logoutMutation = useLogoutSession();
@@ -65,7 +69,7 @@ export function UserAvatarMenu() {
         className="h-auto rounded-[var(--radius-pill)] transition-all duration-200 group "
       >
         <div className="flex items-center gap-3">
-          <div className="hidden text-right sm:block">
+          <div className={`text-right ${showLabel ? "hidden sm:block" : "hidden"}`}>
             <Text as="p" variant="label" className="text-[0.56rem] tracking-[0.18em] translate-y-[3.5px]">
               Account
             </Text>
@@ -112,10 +116,19 @@ export function UserAvatarMenu() {
         <DropdownItem
           needCheck={false}
           className="gap-3 justify-start"
+          onClick={() => router.push("/my-files")}
+        >
+          <Settings className="ui-icon-sm text-muted-foreground" />
+          <span>Go to My Files</span>
+        </DropdownItem>
+
+        <DropdownItem
+          needCheck={false}
+          className="gap-3 justify-start"
           onClick={() => router.push("/me")}
         >
           <Settings className="ui-icon-sm text-muted-foreground" />
-          <span>Settings</span>
+          <span>Profile</span>
         </DropdownItem>
 
         <DropdownItem

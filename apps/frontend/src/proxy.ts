@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const AUTH_COOKIE = "access_token";
-const AUTH_PAGES = new Set(["/", "/sign-in", "/sign-up"]);
+const AUTH_PAGES = new Set(["/sign-in", "/sign-up"]);
 const PROTECTED_PAGES = new Set(["/me", "/my-files"]);
 
 export function proxy(request: NextRequest) {
@@ -14,7 +14,7 @@ export function proxy(request: NextRequest) {
   }
 
   if (AUTH_PAGES.has(pathname) && hasAuthCookie) {
-    return NextResponse.redirect(new URL("/me", request.url));
+    return NextResponse.redirect(new URL("/my-files", request.url));
   }
 
   return NextResponse.next();

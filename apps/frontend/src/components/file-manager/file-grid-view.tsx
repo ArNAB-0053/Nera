@@ -2,7 +2,7 @@
 
 import { Text } from "@nera/ui";
 import { CornerUpLeft } from "lucide-react";
-import { formatBytes, formatDateLabel } from "@/lib/utils";
+import { formatDateLabel } from "@/lib/utils";
 import type { FileRecord, FolderRecord } from "@/services/base";
 import { FileEntryActions } from "./file-entry-actions";
 import { FileEntryIcon } from "./file-entry-icon";
@@ -56,14 +56,14 @@ type FileCardProps = {
   file: FileRecord;
   onDownload: () => void;
   onDelete: () => void;
-  isDownloading: boolean;
+  isDeleting: boolean;
 };
 
 function FileCard({
   file,
   onDownload,
   onDelete,
-  isDownloading,
+  isDeleting,
 }: FileCardProps) {
   return (
     <div className="relative overflow-hidden flex items-center justify-between h-50 w-full flex-col rounded-xl border border-border/70 bg-card/75 shadow-sm transition hover:border-primary/30 hover:bg-card">
@@ -80,6 +80,7 @@ function FileCard({
           <FileEntryActions
           itemLabel={file.name}
           canDownload
+          isDeleting={isDeleting}
           onDownload={onDownload}
           onDelete={onDelete}
         />
@@ -117,7 +118,8 @@ type FileGridViewProps = {
   onOpenFolder: (folderId: string) => void;
   onOpenFile: (file: FileRecord) => void;
   onDeletePlaceholder: (itemName: string) => void;
-  activeDownloadId: string | null;
+  onDeleteFile: (file: FileRecord) => void;
+  activeDeleteId: string | null;
 };
 
 export function FileGridView({
@@ -128,7 +130,8 @@ export function FileGridView({
   onOpenFolder,
   onOpenFile,
   onDeletePlaceholder,
-  activeDownloadId,
+  onDeleteFile,
+  activeDeleteId,
 }: FileGridViewProps) {
   return (
     <div className="space-y-6">
@@ -175,8 +178,8 @@ export function FileGridView({
                 key={file.id}
                 file={file}
                 onDownload={() => onOpenFile(file)}
-                onDelete={() => onDeletePlaceholder(file.name)}
-                isDownloading={activeDownloadId === file.id}
+                onDelete={() => onDeleteFile(file)}
+                isDeleting={activeDeleteId === file.id}
               />
             ))}
           </div>

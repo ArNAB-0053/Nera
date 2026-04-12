@@ -27,6 +27,10 @@ export type DownloadFileResult = {
   filename: string;
 };
 
+export type DeleteFileResult = {
+  id: string;
+};
+
 function getFilenameFromDisposition(disposition?: string) {
   if (!disposition) {
     return "download";
@@ -93,6 +97,11 @@ export async function downloadFile(fileId: string) {
   } satisfies DownloadFileResult;
 }
 
+export async function deleteFile(fileId: string) {
+  const { data } = await axiosInstance.delete<ApiSuccess<DeleteFileResult>>(`/api/file/${encodeURIComponent(fileId)}`);
+  return data.data;
+}
+
 export function useFiles(folderId: string | null, sortBy: FileSortBy, order: SortOrder) {
   return useQuery({
     queryKey: queryKeys.files(folderId, sortBy, order),
@@ -106,6 +115,21 @@ export function useUploadFile(folderId: string | null) {
   return useMutation({
     mutationFn: ({ file, onProgress }: Pick<UploadFilePayload, "file" | "onProgress">) =>
       uploadFile({ folderId, file, onProgress }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["file", "list"] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.folderView(folderId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.me }),
+      ]);
+    },
+  });
+}
+
+export function useDeleteFile(folderId: string | null) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteFile,
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["file", "list"] }),

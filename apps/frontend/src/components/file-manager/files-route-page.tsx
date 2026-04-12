@@ -14,6 +14,7 @@ import { FILE_PAGE_CONTENT as pageCopy } from "@/constants/filePageContent";
 import { FilesRouteKind } from "@/constants/types";
 import { Breadcrumb } from "../ui/breadcrumb";
 import { UploadFileModal } from "./upload-file-modal";
+import { useFileDelete } from "@/hooks/use-file-delete";
 
 type ViewMode = "table" | "grid";
 
@@ -29,13 +30,18 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const activeDownloadId = null;
+  const [statusMessage, setStatusMessage] = useState("");
 
   const effectiveFolderId = isMyFiles ? currentFolderId : null;
   const folderViewQuery = useFolderView(effectiveFolderId);
   const filesQuery = useFiles(effectiveFolderId, sortBy, order);
 
   const { download: handleDownload } = useFileDownload();
+  const { remove: handleDelete, activeDeleteId } = useFileDelete({
+    folderId: effectiveFolderId,
+    onSuccess: setStatusMessage,
+    onError: setStatusMessage,
+  });
 
   const copy = pageCopy[kind];
   const queryError = folderViewQuery.error
@@ -176,7 +182,7 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
           </Surface>
         ) : null}
 
-        {/* {statusMessage ? (
+        {statusMessage ? (
           <Surface variant="soft" padding="md" className="rounded-[var(--radius-panel)] border border-border/70">
             <div className="flex items-center justify-between gap-3">
               <Text as="p" variant="body">
@@ -187,7 +193,7 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
               </span>
             </div>
           </Surface>
-        ) : null} */}
+        ) : null}
 
         <div className="flex flex-wrap items-center gap-2 ">
           <Breadcrumb
@@ -229,8 +235,10 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
               onGoBack={() => setCurrentFolderId(folderViewQuery.data?.currentFolder?.parentId ?? null)}
               onOpenFolder={setCurrentFolderId}
               onOpenFile={(file) => void handleDownload(file)}
+              activeDownloadId={currentFolderId}
               onDeletePlaceholder={handleDeletePlaceholder}
-              activeDownloadId={activeDownloadId}
+              onDeleteFile={(file) => void handleDelete(file.id, file.name)}
+              activeDeleteId={activeDeleteId}
             />
           ) : (
             <div className="p-4 sm:p-5">
@@ -242,7 +250,8 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
                 onOpenFolder={setCurrentFolderId}
                 onOpenFile={(file) => void handleDownload(file)}
                 onDeletePlaceholder={handleDeletePlaceholder}
-                activeDownloadId={activeDownloadId}
+                onDeleteFile={(file) => void handleDelete(file.id, file.name)}
+                activeDeleteId={activeDeleteId}
               />
             </div>
           )}

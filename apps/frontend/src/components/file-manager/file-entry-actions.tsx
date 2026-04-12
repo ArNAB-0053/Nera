@@ -8,6 +8,7 @@ import { Download, MoreHorizontal, Trash2 } from "lucide-react";
 type FileEntryActionsProps = {
   itemLabel: string;
   canDownload: boolean;
+  isDeleting?: boolean;
   onDownload?: () => void;
   onDelete: () => void;
 };
@@ -15,6 +16,7 @@ type FileEntryActionsProps = {
 export function FileEntryActions({
   itemLabel,
   canDownload,
+  isDeleting = false,
   onDownload,
   onDelete,
 }: FileEntryActionsProps) {
@@ -73,6 +75,7 @@ export function FileEntryActions({
           </button>
           <button
             type="button"
+            disabled={isDeleting}
             className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-destructive transition-colors hover:bg-destructive/10"
             onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
               event.stopPropagation();
@@ -81,7 +84,7 @@ export function FileEntryActions({
             }}
           >
             <Trash2 className="size-4" />
-            Delete
+            {isDeleting ? "Deleting..." : "Delete"}
           </button>
         </div>
       ) : null}

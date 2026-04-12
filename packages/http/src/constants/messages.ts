@@ -4,6 +4,7 @@ export const MESSAGES = {
     LOGIN_SUCCESS: "Login successful",
     PROFILE_FETCHED: "Profile fetched successfully",
     FILE_UPLOADED: "File uploaded successfully",
+    FILE_DELETED: "File deleted successfully",
     FOLDER_CREATED: "Folder created successfully",
     FOLDER_VIEW_FETCHED: "Folder view fetched successfully",
     FILE_LIST_FETCHED: "Files fetched successfully"

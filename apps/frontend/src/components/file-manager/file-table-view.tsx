@@ -16,7 +16,9 @@ type FileTableViewProps = {
   onOpenFolder: (folderId: string) => void;
   onOpenFile: (file: FileRecord) => void;
   onDeletePlaceholder: (itemName: string) => void;
+  onDeleteFile: (file: FileRecord) => void;
   activeDownloadId: string | null;
+  activeDeleteId: string | null;
 };
 
 export function FileTableView({
@@ -27,7 +29,9 @@ export function FileTableView({
   onOpenFolder,
   onOpenFile,
   onDeletePlaceholder,
+  onDeleteFile,
   activeDownloadId,
+  activeDeleteId,
 }: FileTableViewProps) {
   return (
     <Table>
@@ -172,8 +176,9 @@ export function FileTableView({
                 <FileEntryActions
                   itemLabel={file.name}
                   canDownload
+                  isDeleting={activeDeleteId === file.id}
                   onDownload={() => onOpenFile(file)}
-                  onDelete={() => onDeletePlaceholder(file.name)}
+                  onDelete={() => onDeleteFile(file)}
                 />
               </TableCell>
             </TableRow>

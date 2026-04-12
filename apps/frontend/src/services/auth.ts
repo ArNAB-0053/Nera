@@ -55,7 +55,7 @@ export function useCreateSession(setMessage: (message: string) => void) {
     onSuccess: async (response) => {
       setMessage(response.message);
       await queryClient.invalidateQueries({ queryKey: queryKeys.me });
-      router.push("/me");
+      router.push("/my-files");
     },
     onError: (error) => {
       setMessage(getApiErrorMessage(error));

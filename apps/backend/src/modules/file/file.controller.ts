@@ -105,3 +105,10 @@ export async function downloadFile(request: FastifyRequest, reply: FastifyReply)
         .header("Content-Length", result.buffer.length)
         .send(result.buffer);
 }
+
+export async function deleteFile(request: FastifyRequest, reply: FastifyReply) {
+    const { id } = request.params as { id: string };
+
+    const result = await fileServices.deleteFile(request.user.id, id);
+    return reply.ok(result, MESSAGES.success.FILE_DELETED);
+}
