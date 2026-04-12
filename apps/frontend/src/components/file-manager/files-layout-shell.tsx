@@ -60,7 +60,7 @@ export function FilesLayoutShell({ children }: FilesLayoutShellProps) {
       {/* Main Content */}
       <div
         className={cn(
-          "flex min-h-screen min-w-0 flex-1 flex-col transition-all duration-300 relative",
+          "flex h-screen min-w-0 flex-1 flex-col overflow-hidden transition-all duration-300 relative",
         )}
       >
         {/* Top Bar */}
@@ -98,9 +98,9 @@ export function FilesLayoutShell({ children }: FilesLayoutShellProps) {
         </div>
 
         {/* Content */}
-        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
           {children}
-        </main>
+        </div>
       </div>
     </div>
   );

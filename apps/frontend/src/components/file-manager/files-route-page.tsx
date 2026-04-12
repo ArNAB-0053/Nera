@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Button, cn, Dropdown, DropdownContent, DropdownItem, DropdownTrigger, Surface, Text } from "@nera/ui";
 import { ChevronRight, FolderPlus, LayoutGrid, List, Upload } from "lucide-react";
-import { getApiErrorMessage, type FileRecord, type FileSortBy, type SortOrder } from "@/services/base";
-import { useDownloadFile, useFiles, useUploadFile } from "@/services/file.service";
+import { getApiErrorMessage, type FileSortBy, type SortOrder } from "@/services/base";
+import { useFiles } from "@/services/file.service";
 import { useFolderView } from "@/services/folder.service";
 import { FileGridView } from "./file-grid-view";
 import { FileTableView } from "./file-table-view";
@@ -13,6 +13,7 @@ import { useFileDownload } from "@/hooks/files";
 import { FILE_PAGE_CONTENT as pageCopy } from "@/constants/filePageContent";
 import { FilesRouteKind } from "@/constants/types";
 import { Breadcrumb } from "../ui/breadcrumb";
+import { UploadFileModal } from "./upload-file-modal";
 
 type ViewMode = "table" | "grid";
 
@@ -22,21 +23,19 @@ type FilesRoutePageProps = {
 
 export function FilesRoutePage({ kind }: FilesRoutePageProps) {
   const isMyFiles = kind === "my-files";
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<FileSortBy>(kind === "recent" ? "updatedAt" : "name");
   const [order, setOrder] = useState<SortOrder>("desc");
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
-  const [activeDownloadId, setActiveDownloadId] = useState<string | null>(null);
-  const [statusMessage, setStatusMessage] = useState("");
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const activeDownloadId = null;
 
   const effectiveFolderId = isMyFiles ? currentFolderId : null;
   const folderViewQuery = useFolderView(effectiveFolderId);
   const filesQuery = useFiles(effectiveFolderId, sortBy, order);
-  const uploadMutation = useUploadFile(effectiveFolderId);
 
-  const {download: handleDownload, isDownloading, error} = useFileDownload()
+  const { download: handleDownload } = useFileDownload();
 
   const copy = pageCopy[kind];
   const queryError = folderViewQuery.error
@@ -64,23 +63,8 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
     ? folderViewQuery.data?.breadcrumbs ?? [{ id: null, name: "My Files" }]
     : [{ id: null, name: copy.title }];
 
-  const handleUpload = async (file: File | null) => {
-    if (!file) {
-      return;
-    }
-
-    setStatusMessage("");
-
-    try {
-      await uploadMutation.mutateAsync({ file });
-      setStatusMessage(`${file.name} uploaded successfully.`);
-    } catch (error) {
-      setStatusMessage(getApiErrorMessage(error));
-    }
-  };
-
   const handleDeletePlaceholder = (itemName: string) => {
-    setStatusMessage(`Delete is still UI-only for ${itemName}.`);
+    console.info(`Delete is still UI-only for ${itemName}.`);
   };
 
   return (
@@ -91,7 +75,7 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
           "rounded-[var(--radius-panel)] border border-border/70 bg-card/72 p-5 shadow-[var(--shadow-soft)] sm:p-6 "
         )}
         >
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className=" flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
               {/* <Text as="p" variant="label">
                 Files Workspace
@@ -171,13 +155,9 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
                     <FolderPlus className="size-4" />
                     New Folder
                   </Button>
-                  <Button
-                    type="button"
-                    onClick={() => inputRef.current?.click()}
-                    disabled={uploadMutation.isPending}
-                  >
+                  <Button type="button" onClick={() => setIsUploadModalOpen(true)}>
                     <Upload className="size-4" />
-                    {uploadMutation.isPending ? "Uploading..." : "Upload"}
+                    Upload
                   </Button>
                 </>
               ) : null}
@@ -271,20 +251,17 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
 
       {isMyFiles ? (
         <>
-          <input
-            ref={inputRef}
-            type="file"
-            className="hidden"
-            onChange={(event) => {
-              void handleUpload(event.target.files?.[0] ?? null);
-              event.target.value = "";
-            }}
-          />
-
           <CreateFolderModal
             open={isCreateFolderOpen}
             onOpenChange={setIsCreateFolderOpen}
             parentId={currentFolderId}
+            currentFolderName={folderViewQuery.data?.currentFolder?.name ?? "My Files"}
+          />
+
+          <UploadFileModal
+            open={isUploadModalOpen}
+            onOpenChange={setIsUploadModalOpen}
+            folderId={currentFolderId}
             currentFolderName={folderViewQuery.data?.currentFolder?.name ?? "My Files"}
           />
         </>

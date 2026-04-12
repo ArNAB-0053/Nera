@@ -100,9 +100,9 @@ export function FileTableView({
             className="cursor-pointer"
           >
             <TableCell>
-              <div className="flex items-center gap-3 font-medium text-foreground">
+              <div className="flex items-center gap-3 font-medium text-foreground ">
                 <FileEntryIcon kind="folder" className="size-4 text-primary" />
-                <span className="truncate">{folder.name}</span>
+                <span className="truncate w-9/10">{folder.name}</span>
               </div>
             </TableCell>
             <TableCell>
@@ -148,9 +148,9 @@ export function FileTableView({
               className="cursor-pointer"
             >
               <TableCell>
-                <div className="flex items-center gap-3 font-medium text-foreground">
+                <div className="flex items-center justify-start gap-3 font-medium text-foreground">
                   <FileEntryIcon kind="file" file={file} className="size-4 text-primary" />
-                  <span className="truncate">{file.name}</span>
+                  <span className="truncate w-9/10">{file.name}</span>
                 </div>
               </TableCell>
               <TableCell>

@@ -72,7 +72,7 @@ function FileCard({
         </div>
 
       <div className="flex items-center justify-center overflow-hidden w-full relative ">
-        <Text className=" line-clamp-1 text-nowrap font-semibold text-sm text-foreground p-3 ">
+        <Text className=" truncate text-nowrap font-semibold text-sm text-foreground py-3 px-12 ">
           {file.name}
         </Text>
 
