@@ -9,7 +9,15 @@ export const authRepository: IAutoRepository = {
                 email: data.email,
                 passwordHash: data.passwordHash,
                 ...(data.username !== undefined && { username: data.username }),
-            }
+            },
+            select: {
+                id: true,
+                email: true,
+                username: true,
+                isVerified: true,
+                createdAt: true,
+                updatedAt: true,
+            },
         });
     },
 

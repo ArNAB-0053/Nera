@@ -17,7 +17,10 @@ export const authService = {
             email: input.email,
             username: input?.username,
             passwordHash,
-        })
+        }).then((createdUser) => ({
+            ...createdUser,
+            totalStorageUsed: 0,
+        }))
 
         return user;
     },

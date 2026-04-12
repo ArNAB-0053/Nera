@@ -110,6 +110,7 @@ export function useUploadFile(folderId: string | null) {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["file", "list"] }),
         queryClient.invalidateQueries({ queryKey: queryKeys.folderView(folderId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.me }),
       ]);
     },
   });

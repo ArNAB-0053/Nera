@@ -29,6 +29,11 @@ export interface IUploadType {
 
 export interface IFileRepository {
     createFile(data: CreateFileData): Promise<PrismaFile>;
+    createFileWithStorageUpdate(input: {
+        userId: string;
+        fileSize: bigint;
+        data: CreateFileData;
+    }): Promise<PrismaFile>;
     findFileById(id: string, userId: string): Promise<PrismaFile | null>;
     findFilesByFolder(input: {
         userId: string;

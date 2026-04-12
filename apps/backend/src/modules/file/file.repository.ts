@@ -1,6 +1,9 @@
 import { prisma } from "@/prisma/prisma.js";
 import type { IFileRepository } from "./file.schema.js";
 import type { CreateFileData } from "@nera/db";
+import { BadRequestError, MESSAGES } from "@nera/http";
+
+const MAX_USER_STORAGE_BYTES = 2n * 1024n * 1024n * 1024n;
 
 const PUBLIC_FILE_SELECT = {
   id: true,
@@ -25,6 +28,27 @@ export const fileRepository: IFileRepository = {
     return prisma.file.create({
       data,
       select: PUBLIC_FILE_SELECT,
+    });
+  },
+
+  createFileWithStorageUpdate({ userId, fileSize, data }) {
+    return prisma.$transaction(async (tx) => {
+      const maxAllowedStorage = MAX_USER_STORAGE_BYTES - fileSize;
+      const updatedUsers = await tx.$executeRaw`
+        UPDATE "users"
+        SET "totalStorageUsed" = "totalStorageUsed" + ${fileSize}
+        WHERE "id" = ${userId}
+          AND "totalStorageUsed" <= ${maxAllowedStorage}
+      `;
+
+      if (updatedUsers === 0) {
+        throw new BadRequestError(MESSAGES.error.STORAGE_LIMIT_EXCEEDED);
+      }
+
+      return tx.file.create({
+        data,
+        select: PUBLIC_FILE_SELECT,
+      });
     });
   },
 

@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { Text, Tooltip, TooltipContent, TooltipTrigger } from "@nera/ui";
 import { Clock3, FolderOpen, HardDrive, Pin, ShieldCheck, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatBytes } from "@/lib/utils";
+import { useGetCurrentUser } from "@/services/user";
 import { SidebarItem } from "./sidebar-item";
 
 type FilesSidebarProps = {
@@ -17,10 +19,15 @@ const items = [
   { href: "/trash", label: "Trash", icon: Trash2 },
 ];
 
+const MAX_USER_STORAGE_BYTES = 2 * 1024 * 1024 * 1024;
+
 export function FilesSidebar({ state }: FilesSidebarProps) {
   const pathname = usePathname();
   const collapsed = state === "collapsed";
-  const storageUsage = 40;
+  const meQuery = useGetCurrentUser();
+  const totalStorageUsed = meQuery.data?.data.totalStorageUsed ?? 0;
+  const storageUsage = Math.min((totalStorageUsed / MAX_USER_STORAGE_BYTES) * 100, 100);
+  const remainingStorage = Math.max(MAX_USER_STORAGE_BYTES - totalStorageUsed, 0);
 
   return (
     <div className="flex min-h-screen w-full flex-col justify-between px-3 py-4">
@@ -73,11 +80,11 @@ export function FilesSidebar({ state }: FilesSidebarProps) {
           </div>
 
           <Text as="p" variant="muted">
-            2.1 GB of 5 GB used
+            {formatBytes(totalStorageUsed)} of {formatBytes(MAX_USER_STORAGE_BYTES)} used
           </Text>
 
           <Text as="p" variant="muted" className="text-xs">
-            <strong>Note:</strong> Just for UI
+            {formatBytes(remainingStorage)} remaining
           </Text>
         </div>
       ) : (
@@ -107,11 +114,11 @@ export function FilesSidebar({ state }: FilesSidebarProps) {
               </div>
 
               <Text as="p" variant="muted">
-                2.1 GB of 5 GB used
+                {formatBytes(totalStorageUsed)} of {formatBytes(MAX_USER_STORAGE_BYTES)} used
               </Text>
 
               <Text as="p" variant="muted" className="text-xs">
-                <strong>Note:</strong> Just for UI
+                {formatBytes(remainingStorage)} remaining
               </Text>
             </div>
           </TooltipContent>

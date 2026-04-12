@@ -26,6 +26,7 @@ model User {
   email String @unique
   username String? @unique
   passwordHash String
+  totalStorageUsed BigInt @default(0)
 
   isVerified Boolean @default(false)
 

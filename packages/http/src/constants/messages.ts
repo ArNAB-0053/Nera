@@ -24,7 +24,8 @@ export const MESSAGES = {
     // File
     FILE_NEEDED: 'File is required',
     FILE_LARGE: 'File too large',
-    INVALID_FILE_TYPE: 'Invalid file type'
+    INVALID_FILE_TYPE: 'Invalid file type',
+    STORAGE_LIMIT_EXCEEDED: "Storage limit exceeded"
   },
 
 } as const;

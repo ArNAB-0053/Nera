@@ -4,8 +4,11 @@ import { randomUUID } from "crypto";
 import { deleteObject, getObject, uploadObject } from "@/services/storage.service.js";
 import { fileRepository as repo } from "./file.repository.js";
 import type { CreateFileData, PrismaFile } from "@nera/db";
-import { MESSAGES, NotFoundError } from "@nera/http";
+import { BadRequestError, MESSAGES, NotFoundError } from "@nera/http";
 import { folderRepository } from "../folder/folder.repository.js";
+import { userRepository } from "../user/user.repository.js";
+
+const MAX_USER_STORAGE_BYTES = 2n * 1024n * 1024n * 1024n;
 
 export const fileServices = {
     async assertFolderAccess(userId: string, folderId?: string | null) {
@@ -27,6 +30,17 @@ export const fileServices = {
     // -----------------------------------------
     async uploadFile({ userId, folderId, file }: IUploadType) {
         await this.assertFolderAccess(userId, folderId);
+        const fileSize = BigInt(file.size);
+        const userStorage = await userRepository.findStorageUsageById(userId);
+
+        if (!userStorage) {
+            throw new NotFoundError(MESSAGES.error.USER_NOT_FOUND);
+        }
+
+        if (userStorage.totalStorageUsed + fileSize > MAX_USER_STORAGE_BYTES) {
+            throw new BadRequestError(MESSAGES.error.STORAGE_LIMIT_EXCEEDED);
+        }
+
         const buffer = Buffer.from(new Uint8Array(await file.arrayBuffer()))
 
         const { encrypted, iv, tag } = encryptFile(buffer)
@@ -42,7 +56,7 @@ export const fileServices = {
                 userId,
                 folderId: folderId ?? null,
                 name: file.name,
-                size: BigInt(file.size),
+                size: fileSize,
                 storagePath: path,
                 mimeType: file.type,
                 isEncrypted: true,
@@ -50,7 +64,11 @@ export const fileServices = {
                 encryptionTag: tag.toString("hex"),
             }
 
-            const saved = await repo.createFile(payload)
+            const saved = await repo.createFileWithStorageUpdate({
+                userId,
+                fileSize,
+                data: payload,
+            })
             return {
                 ...saved,
                 size: Number(saved.size),

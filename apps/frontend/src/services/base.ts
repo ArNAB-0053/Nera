@@ -16,6 +16,7 @@ export type PublicUser = {
   id: string;
   email: string;
   username?: string | null;
+  totalStorageUsed: number;
   isVerified?: boolean;
   createdAt?: string;
   updatedAt?: string;

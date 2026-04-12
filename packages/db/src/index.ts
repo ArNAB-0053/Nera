@@ -13,7 +13,17 @@ export type { File as PrismaFile } from "./generated/prisma/index.js";
 export type { Folder as PrismaFolder } from "./generated/prisma/index.js";
 
 // User
-export type PublicUser = Omit<User, "passwordHash">;
+export type DbPublicUser = {
+  id: string;
+  email: string;
+  username: string | null;
+  isVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+export type PublicUser = DbPublicUser & {
+  totalStorageUsed: number;
+};
 export type JwtPayload = Pick<User, "id" | "email" | "username">;
 export type AuthResponse = {
   user: PublicUser;

@@ -1,4 +1,4 @@
-import type { RefreshToken, RefreshTokenInputType, User } from "@nera/db";
+import type { DbPublicUser, RefreshToken, RefreshTokenInputType, User } from "@nera/db";
 
 export interface CreateUserData {
   email: string;
@@ -14,7 +14,7 @@ export type AuthUser = {
 }
 
 export interface IAutoRepository {
-    createUser(data: CreateUserData): Promise<User>;
+    createUser(data: CreateUserData): Promise<DbPublicUser>;
     findAuthUserByIdentifier(identifier: string): Promise<AuthUser | null>;
     createRefreshToken(data: RefreshTokenInputType): Promise<RefreshToken>;
     findRefreshTokensByUser(userId: string): Promise<RefreshToken[]>;

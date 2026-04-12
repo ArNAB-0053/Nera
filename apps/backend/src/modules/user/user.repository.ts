@@ -39,5 +39,16 @@ export const userRepository : IUserRepository = {
             where: isEmail ? {email: identifier} : {username: identifier},
             select: PUBLIC_USER_SELECT,
         })
-    }
+    },
+
+    findStorageUsageById(id: string) {
+        return prisma
+            .$queryRaw<Array<{ totalStorageUsed: bigint }>>`
+                SELECT "totalStorageUsed"
+                FROM "users"
+                WHERE "id" = ${id}
+                LIMIT 1
+            `
+            .then((rows) => rows[0] ?? null)
+    },
 }
