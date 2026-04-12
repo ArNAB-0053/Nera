@@ -1,12 +1,113 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { Text } from "@nera/ui";
 import { CornerUpLeft } from "lucide-react";
 import { formatBytes, formatDateLabel } from "@/lib/utils";
 import type { FileRecord, FolderRecord } from "@/services/base";
 import { FileEntryActions } from "./file-entry-actions";
 import { FileEntryIcon } from "./file-entry-icon";
+
+/* ---------------------------------- */
+/*           Folder Card              */
+/* ---------------------------------- */
+
+type FolderCardProps = {
+  folder: FolderRecord;
+  onOpen: (id: string) => void;
+  onDelete: () => void;
+};
+
+function FolderCard({ folder, onOpen, onDelete }: FolderCardProps) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(folder.id)}
+      className="group flex h-24 items-center gap-4 rounded-xl border border-border/70 bg-card/70 p-4 text-left transition hover:bg-accent"
+    >
+      <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <FileEntryIcon kind="folder" className="size-6" />
+      </div>
+
+      <div className="flex flex-col overflow-hidden">
+        <Text className="truncate font-semibold text-foreground">
+          {folder.name}
+        </Text>
+        <Text variant="muted">
+          {formatDateLabel(folder.updatedAt)}
+        </Text>
+      </div>
+
+      <div className="ml-auto">
+        <FileEntryActions
+          itemLabel={folder.name}
+          canDownload={false}
+          onDelete={onDelete}
+        />
+      </div>
+    </button>
+  );
+}
+
+/* ---------------------------------- */
+/*             File Card              */
+/* ---------------------------------- */
+
+type FileCardProps = {
+  file: FileRecord;
+  onDownload: () => void;
+  onDelete: () => void;
+  isDownloading: boolean;
+};
+
+function FileCard({
+  file,
+  onDownload,
+  onDelete,
+  isDownloading,
+}: FileCardProps) {
+  return (
+    <div className="relative overflow-hidden flex items-center justify-between h-50 w-full flex-col rounded-xl border border-border/70 bg-card/75 shadow-sm transition hover:border-primary/30 hover:bg-card">
+      <div className="flex w-full h-8/10 items-center justify-center bg-primary/10 p-6 text-primary">
+          <FileEntryIcon kind="file" file={file} className=" w-full h-full " />
+        </div>
+
+      <div className="flex items-center justify-center overflow-hidden w-full relative ">
+        <Text className=" line-clamp-1 text-nowrap font-semibold text-sm text-foreground p-3 ">
+          {file.name}
+        </Text>
+
+        <div className="absolute right-0 -top-1/2 translate-y-1/2">
+          <FileEntryActions
+          itemLabel={file.name}
+          canDownload
+          onDownload={onDownload}
+          onDelete={onDelete}
+        />
+        </div>
+      
+      </div>
+
+      {/* <div className="mt-4 space-y-1">
+        <Text className="line-clamp-2 font-semibold text-foreground">
+          {file.name}
+        </Text>
+        <Text variant="muted">{file.mimeType ?? "File"}</Text>
+      </div> */}
+
+      {/* <div className="mt-auto pt-4">
+        <Text variant="muted">
+          {isDownloading
+            ? "Preparing..."
+            : `${formatBytes(file.size)} · ${formatDateLabel(file.updatedAt)}`}
+        </Text>
+      </div> */}
+    </div>
+  );
+}
+
+/* ---------------------------------- */
+/*         File Grid View             */
+/* ---------------------------------- */
 
 type FileGridViewProps = {
   folders: FolderRecord[];
@@ -19,63 +120,6 @@ type FileGridViewProps = {
   activeDownloadId: string | null;
 };
 
-type CardButtonProps = {
-  title: string;
-  subtitle: string;
-  meta: string;
-  onClick: () => void;
-  onDelete: () => void;
-  onDownload?: () => void;
-  canDownload: boolean;
-  icon: ReactNode;
-};
-
-function CardButton({
-  title,
-  subtitle,
-  meta,
-  onClick,
-  onDelete,
-  onDownload,
-  canDownload,
-  icon,
-}: CardButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group flex min-h-44 flex-col rounded-[var(--radius-panel)] border border-border/70 bg-card/75 p-4 text-left shadow-[var(--shadow-soft)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-card"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          {icon}
-        </div>
-        <FileEntryActions
-          itemLabel={title}
-          canDownload={canDownload}
-          onDownload={onDownload}
-          onDelete={onDelete}
-        />
-      </div>
-
-      <div className="mt-6 space-y-2">
-        <Text as="p" className="line-clamp-2 font-semibold text-foreground">
-          {title}
-        </Text>
-        <Text as="p" variant="muted">
-          {subtitle}
-        </Text>
-      </div>
-
-      <div className="mt-auto pt-6">
-        <Text as="span" variant="muted">
-          {meta}
-        </Text>
-      </div>
-    </button>
-  );
-}
-
 export function FileGridView({
   folders,
   files,
@@ -87,49 +131,57 @@ export function FileGridView({
   activeDownloadId,
 }: FileGridViewProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {canGoBack ? (
-        <CardButton
-          title="Go Back"
-          subtitle="Return to parent folder"
-          meta="Navigation"
-          onClick={onGoBack}
-          onDelete={() => onDeletePlaceholder("parent folder shortcut")}
-          canDownload={false}
-          icon={<CornerUpLeft className="size-5" />}
-        />
-      ) : null}
+    <div className="space-y-6">
+      {/* ---------------- FOLDERS ---------------- */}
+      {(folders.length > 0 || canGoBack) && (
+        <div>
+          <Text variant="label" className="mb-2">
+            Folders
+          </Text>
 
-      {folders.map((folder) => (
-        <CardButton
-          key={folder.id}
-          title={folder.name}
-          subtitle="Folder"
-          meta={formatDateLabel(folder.updatedAt)}
-          onClick={() => onOpenFolder(folder.id)}
-          onDelete={() => onDeletePlaceholder(folder.name)}
-          canDownload={false}
-          icon={<FileEntryIcon kind="folder" className="size-5" />}
-        />
-      ))}
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {canGoBack && (
+              <button
+                onClick={onGoBack}
+                className="flex h-24 items-center gap-4 rounded-xl border border-border/70 bg-card/70 p-4 hover:bg-accent"
+              >
+                <CornerUpLeft className="size-5" />
+                <Text>Go Back</Text>
+              </button>
+            )}
 
-      {files.map((file) => (
-        <CardButton
-          key={file.id}
-          title={file.name}
-          subtitle={file.mimeType ?? "File"}
-          meta={
-            activeDownloadId === file.id
-              ? "Preparing..."
-              : `${formatBytes(file.size)} · ${formatDateLabel(file.updatedAt)}`
-          }
-          onClick={() => onOpenFile(file)}
-          onDownload={() => onOpenFile(file)}
-          onDelete={() => onDeletePlaceholder(file.name)}
-          canDownload
-          icon={<FileEntryIcon kind="file" file={file} className="size-5" />}
-        />
-      ))}
+            {folders.map((folder) => (
+              <FolderCard
+                key={folder.id}
+                folder={folder}
+                onOpen={onOpenFolder}
+                onDelete={() => onDeletePlaceholder(folder.name)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- FILES ---------------- */}
+      {files.length > 0 && (
+        <div>
+          <Text variant="label" className="mb-2">
+            Files
+          </Text>
+
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            {files.map((file) => (
+              <FileCard
+                key={file.id}
+                file={file}
+                onDownload={() => onOpenFile(file)}
+                onDelete={() => onDeletePlaceholder(file.name)}
+                isDownloading={activeDownloadId === file.id}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

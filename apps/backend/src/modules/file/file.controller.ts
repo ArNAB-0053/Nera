@@ -100,7 +100,8 @@ export async function downloadFile(request: FastifyRequest, reply: FastifyReply)
         .header("Content-Type", result.mimeType || "application/octet-stream")
         .header(
             "Content-Disposition",
-            `attachment; filename="${result.name}"`
+            `attachment; filename*=UTF-8''${encodeURIComponent(result.name)}`
         )
+        .header("Content-Length", result.buffer.length)
         .send(result.buffer);
 }

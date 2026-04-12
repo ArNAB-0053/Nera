@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const AUTH_COOKIE = "access_token";
 const AUTH_PAGES = new Set(["/", "/sign-in", "/sign-up"]);
-const PROTECTED_PAGES = new Set(["/me", "/file"]);
+const PROTECTED_PAGES = new Set(["/me", "/my-files"]);
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -21,5 +21,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/sign-in", "/sign-up", "/me", "/file"],
+  matcher: ["/", "/sign-in", "/sign-up", "/me", "/my-files"],
 };

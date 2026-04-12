@@ -90,13 +90,14 @@ function DropdownContent({ className, ...props }: DropdownContentProps) {
 
 type DropdownItemProps = React.ComponentProps<"button"> & {
   active?: boolean;
+  needCheck?: boolean;
 };
 
-function DropdownItem({ className, active, children, ...props }: DropdownItemProps) {
+function DropdownItem({ className, needCheck = true, active, children, ...props }: DropdownItemProps) {
   return (
     <button type="button" className={cn("ui-dropdown-item", className)} {...props}>
-      <span>{children}</span>
-      {active ? <Check className="ui-icon-sm text-primary" /> : <span className="ui-icon-sm" />}
+      <>{children}</>
+      {needCheck ? (active ? <Check className="ui-icon-sm text-primary" /> : <span className="ui-icon-sm" />) : null}
     </button>
   );
 }

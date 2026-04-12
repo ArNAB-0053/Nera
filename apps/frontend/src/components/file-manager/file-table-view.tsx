@@ -52,7 +52,7 @@ export function FileTableView({
                 onGoBack();
               }
             }}
-            className="cursor-pointer bg-background/50"
+            className="cursor-pointer "
           >
             <TableCell>
               <div className="flex items-center gap-3 font-medium">
@@ -138,13 +138,13 @@ export function FileTableView({
               key={file.id}
               tabIndex={0}
               role="button"
-              onClick={() => onOpenFile(file)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  onOpenFile(file);
-                }
-              }}
+              // onClick={() => onOpenFile(file)}
+              // onKeyDown={(event) => {
+              //   if (event.key === "Enter" || event.key === " ") {
+              //     event.preventDefault();
+              //     onOpenFile(file);
+              //   }
+              // }}
               className="cursor-pointer"
             >
               <TableCell>
@@ -154,7 +154,7 @@ export function FileTableView({
                 </div>
               </TableCell>
               <TableCell>
-                <span className="inline-flex rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">
+                <span className="inline-flex rounded-full  px-2.5 py-1 text-xs font-medium text-accent-foreground">
                   {file.mimeType ?? "File"}
                 </span>
               </TableCell>

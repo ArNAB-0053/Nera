@@ -1,0 +1,1 @@
+export type FilesRouteKind = "my-files" | "recent" | "pinned" | "trash";

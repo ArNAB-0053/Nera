@@ -2,7 +2,7 @@
 
 import { Text } from "@nera/ui";
 import type { FolderBreadcrumb as BreadcrumbItem } from "@/services/base";
-import { Breadcrumb } from "./breadcrumb";
+import { Breadcrumb } from "../ui/breadcrumb";
 
 type HeaderProps = {
   breadcrumbs?: BreadcrumbItem[];
@@ -16,9 +16,6 @@ export function Header({ breadcrumbs, onNavigate }: HeaderProps) {
         File Manager
       </Text>
       <Breadcrumb breadcrumbs={breadcrumbs?? []} onNavigate={onNavigate} />
-      {/* <Text as="p" variant="muted">
-        {breadcrumbs?.map((item) => item.name).join(" > ")}
-      </Text> */}
     </div>
   );
 }

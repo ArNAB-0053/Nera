@@ -1,68 +1,24 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button, Surface, Text } from "@nera/ui";
-import { FolderPlus, LayoutGrid, List, Upload } from "lucide-react";
+import { Button, cn, Dropdown, DropdownContent, DropdownItem, DropdownTrigger, Surface, Text } from "@nera/ui";
+import { ChevronRight, FolderPlus, LayoutGrid, List, Upload } from "lucide-react";
 import { getApiErrorMessage, type FileRecord, type FileSortBy, type SortOrder } from "@/services/base";
 import { useDownloadFile, useFiles, useUploadFile } from "@/services/file.service";
 import { useFolderView } from "@/services/folder.service";
 import { FileGridView } from "./file-grid-view";
 import { FileTableView } from "./file-table-view";
 import { CreateFolderModal } from "./create-folder-modal";
+import { useFileDownload } from "@/hooks/files";
+import { FILE_PAGE_CONTENT as pageCopy } from "@/constants/filePageContent";
+import { FilesRouteKind } from "@/constants/types";
+import { Breadcrumb } from "../ui/breadcrumb";
 
-type FilesRouteKind = "my-files" | "recent" | "pinned" | "trash";
 type ViewMode = "table" | "grid";
-
-const pageCopy: Record<
-  FilesRouteKind,
-  {
-    title: string;
-    description: string;
-    emptyTitle: string;
-    emptyDescription: string;
-  }
-> = {
-  "my-files": {
-    title: "My Files",
-    description: "Browse folders, upload files, and manage the main workspace without leaving the shared explorer shell.",
-    emptyTitle: "Nothing here yet",
-    emptyDescription: "Upload a file or create a folder to start organizing your workspace.",
-  },
-  recent: {
-    title: "Recent",
-    description: "A quick, non-reloading view of your most recently updated files.",
-    emptyTitle: "No recent files",
-    emptyDescription: "Files you open or update most recently will appear here.",
-  },
-  pinned: {
-    title: "Pinned",
-    description: "A focused space for items you want to keep within reach.",
-    emptyTitle: "No pinned items yet",
-    emptyDescription: "Pinned items are not available from the current API yet, so this view stays ready for them.",
-  },
-  trash: {
-    title: "Trash",
-    description: "Review deleted items from the same explorer layout before destructive actions are wired up.",
-    emptyTitle: "Trash is empty",
-    emptyDescription: "Deleted items will appear here when the API starts returning them.",
-  },
-};
 
 type FilesRoutePageProps = {
   kind: FilesRouteKind;
 };
-
-function downloadBlob(blob: Blob, filename: string) {
-  const url = window.URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.URL.revokeObjectURL(url);
-}
 
 export function FilesRoutePage({ kind }: FilesRoutePageProps) {
   const isMyFiles = kind === "my-files";
@@ -78,8 +34,9 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
   const effectiveFolderId = isMyFiles ? currentFolderId : null;
   const folderViewQuery = useFolderView(effectiveFolderId);
   const filesQuery = useFiles(effectiveFolderId, sortBy, order);
-  const downloadMutation = useDownloadFile();
   const uploadMutation = useUploadFile(effectiveFolderId);
+
+  const {download: handleDownload, isDownloading, error} = useFileDownload()
 
   const copy = pageCopy[kind];
   const queryError = folderViewQuery.error
@@ -122,41 +79,30 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
     }
   };
 
-  const handleDownload = async (file: FileRecord) => {
-    setActiveDownloadId(file.id);
-    setStatusMessage("");
-
-    try {
-      const { blob, filename } = await downloadMutation.mutateAsync(file.id);
-      downloadBlob(blob, filename || file.name);
-      setStatusMessage(`${file.name} is ready to download.`);
-    } catch (error) {
-      setStatusMessage(getApiErrorMessage(error));
-    } finally {
-      setActiveDownloadId(null);
-    }
-  };
-
   const handleDeletePlaceholder = (itemName: string) => {
     setStatusMessage(`Delete is still UI-only for ${itemName}.`);
   };
 
   return (
     <>
-      <section className="mx-auto flex w-full max-w-none flex-col gap-6">
-        <div className="flex flex-col gap-4 rounded-[var(--radius-panel)] border border-border/70 bg-card/72 p-5 shadow-[var(--shadow-soft)] backdrop-blur-xl sm:p-6">
+      <section className="mx-auto flex w-full max-w-none flex-col gap-4">
+        <div className={cn(
+          "flex flex-col gap-4 mb-2 px-2", 
+          "rounded-[var(--radius-panel)] border border-border/70 bg-card/72 p-5 shadow-[var(--shadow-soft)] sm:p-6 "
+        )}
+        >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
-              <Text as="p" variant="label">
+              {/* <Text as="p" variant="label">
                 Files Workspace
-              </Text>
+              </Text> */}
               <div className="space-y-2">
                 <Text as="h1" variant="h2" tone="foreground">
                   {copy.title}
                 </Text>
-                <Text as="p" variant="body" className="max-w-3xl text-muted-foreground">
+                {/* <Text as="p" variant="body" className="max-w-3xl text-muted-foreground">
                   {copy.description}
-                </Text>
+                </Text> */}
               </div>
             </div>
 
@@ -169,7 +115,7 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
                   onClick={() => setViewMode("table")}
                 >
                   <List className="size-4" />
-                  Table
+                  {/* Table */}
                 </Button>
                 <Button
                   type="button"
@@ -178,28 +124,46 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
                   onClick={() => setViewMode("grid")}
                 >
                   <LayoutGrid className="size-4" />
-                  Grid
+                  {/* Grid */}
                 </Button>
               </div>
 
-              <select
-                value={sortBy}
-                onChange={(event) => setSortBy(event.target.value as FileSortBy)}
-                className="h-10 rounded-2xl border border-border/70 bg-background/70 px-3 text-sm outline-none transition-colors focus:border-primary/50"
-              >
-                <option value="name">Sort by name</option>
-                <option value="updatedAt">Sort by modified</option>
-                <option value="size">Sort by size</option>
-              </select>
+              <Dropdown>
+                <DropdownTrigger label="Filter" />
 
-              <select
-                value={order}
-                onChange={(event) => setOrder(event.target.value as SortOrder)}
-                className="h-10 rounded-2xl border border-border/70 bg-background/70 px-3 text-sm outline-none transition-colors focus:border-primary/50"
-              >
-                <option value="desc">Newest first</option>
-                <option value="asc">Oldest first</option>
-              </select>
+                <DropdownContent className="w-48">
+                  <div className="relative group">
+                    {/* Parent item */}
+                    <DropdownItem needCheck={false} className="justify-between w-full">
+                      <span>Sort</span>
+                      <ChevronRight className="ui-icon-sm" />
+                    </DropdownItem>
+
+                    {/* Submenu */}
+                    <div className="absolute left-full top-0 hidden min-w-[160px] rounded-xl border border-border/70 bg-background shadow-md group-hover:block">
+                      <DropdownItem
+                        active={order === "desc"}
+                        onClick={() => {
+                          setSortBy("updatedAt");
+                          setOrder("desc");
+                        }}
+                      >
+                        Newest
+                      </DropdownItem>
+
+                      <DropdownItem
+                        active={order === "asc"}
+                        onClick={() => {
+                          setSortBy("updatedAt");
+                          setOrder("asc");
+                        }}
+                      >
+                        Oldest
+                      </DropdownItem>
+                    </div>
+                  </div>
+                </DropdownContent>
+              </Dropdown>
 
               {isMyFiles ? (
                 <>
@@ -219,28 +183,6 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
               ) : null}
             </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {breadcrumbs.map((breadcrumb, index) => {
-              const isActive = index === breadcrumbs.length - 1;
-
-              return (
-                <button
-                  key={`${breadcrumb.id ?? "root"}-${breadcrumb.name}`}
-                  type="button"
-                  disabled={!isMyFiles || isActive}
-                  onClick={() => {
-                    if (isMyFiles) {
-                      setCurrentFolderId(breadcrumb.id);
-                    }
-                  }}
-                  className="rounded-full border border-border/60 bg-background/65 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-default disabled:opacity-100"
-                >
-                  <span className={isActive ? "font-medium text-foreground" : ""}>{breadcrumb.name}</span>
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {queryError ? (
@@ -254,7 +196,7 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
           </Surface>
         ) : null}
 
-        {statusMessage ? (
+        {/* {statusMessage ? (
           <Surface variant="soft" padding="md" className="rounded-[var(--radius-panel)] border border-border/70">
             <div className="flex items-center justify-between gap-3">
               <Text as="p" variant="body">
@@ -265,12 +207,22 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
               </span>
             </div>
           </Surface>
-        ) : null}
+        ) : null} */}
 
+        <div className="flex flex-wrap items-center gap-2 ">
+          <Breadcrumb
+            breadcrumbs={breadcrumbs}
+            onNavigate={(folderId) => {
+              if (isMyFiles) {
+                setCurrentFolderId(folderId);
+              }
+            }}
+          />
+        </div>
         <Surface
-          variant="elevated"
+          variant="table"
           padding="none"
-          className="w-full max-w-none overflow-hidden rounded-[var(--radius-panel)] border border-border/70 bg-card/72 shadow-[var(--shadow-soft)]"
+          className="w-full max-w-none relative overflow-hidden rounded-[var(--radius-panel)] border border-border/70 bg-card/72 shadow-[var(--shadow-soft)]"
         >
           {isLoading ? (
             <div className="px-6 py-10">
