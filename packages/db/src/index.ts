@@ -24,10 +24,16 @@ export type DbPublicUser = {
 export type PublicUser = DbPublicUser & {
   totalStorageUsed: number;
 };
-export type JwtPayload = Pick<User, "id" | "email" | "username">;
 export type AuthResponse = {
   user: PublicUser;
   accessToken: string;
+};
+
+// token related
+export type JwtPayload = Pick<User, "id" | "email" | "username">;
+export type SessionMeta = {
+  ip?: string;
+  userAgent?: string;
 };
 
 // Auth

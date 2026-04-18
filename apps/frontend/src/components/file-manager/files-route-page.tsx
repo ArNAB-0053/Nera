@@ -15,6 +15,7 @@ import { FilesRouteKind } from "@/constants/types";
 import { Breadcrumb } from "../ui/breadcrumb";
 import { UploadFileModal } from "./upload-file-modal";
 import { useFileDelete } from "@/hooks/use-file-delete";
+import { SearchInput } from "../ui/search-input";
 
 type ViewMode = "table" | "grid";
 
@@ -27,6 +28,8 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<FileSortBy>(kind === "recent" ? "updatedAt" : "name");
   const [order, setOrder] = useState<SortOrder>("desc");
+  const [search, setSearch] = useState("");
+  const [type, setType] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -34,7 +37,7 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
 
   const effectiveFolderId = isMyFiles ? currentFolderId : null;
   const folderViewQuery = useFolderView(effectiveFolderId);
-  const filesQuery = useFiles(effectiveFolderId, sortBy, order);
+  const filesQuery = useFiles(effectiveFolderId, sortBy, order, search, type);
 
   const { download: handleDownload } = useFileDownload();
   const { remove: handleDelete, activeDeleteId } = useFileDelete({
@@ -77,7 +80,7 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
     <>
       <section className="mx-auto flex w-full max-w-none flex-col gap-4">
         <div className={cn(
-          "flex flex-col gap-4 mb-2 px-2", 
+          "flex flex-col gap-4 mb-2 px-2",
           "rounded-[var(--radius-panel)] border border-border/70 bg-card/72 p-5 shadow-[var(--shadow-soft)] sm:p-6 "
         )}
         >
@@ -97,6 +100,12 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                className="w-full sm:w-64"
+              />
+
               <div className="flex items-center rounded-2xl border border-border/70 bg-background/70 p-1">
                 <Button
                   type="button"
@@ -132,7 +141,7 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
                     {/* Submenu */}
                     <div className="absolute left-full top-0 hidden min-w-[160px] rounded-xl border border-border/70 bg-background shadow-md group-hover:block">
                       <DropdownItem
-                        active={order === "desc"}
+                        active={sortBy === "updatedAt" && order === "desc"}
                         onClick={() => {
                           setSortBy("updatedAt");
                           setOrder("desc");
@@ -142,13 +151,81 @@ export function FilesRoutePage({ kind }: FilesRoutePageProps) {
                       </DropdownItem>
 
                       <DropdownItem
-                        active={order === "asc"}
+                        active={sortBy === "updatedAt" && order === "asc"}
                         onClick={() => {
                           setSortBy("updatedAt");
                           setOrder("asc");
                         }}
                       >
                         Oldest
+                      </DropdownItem>
+
+                      <DropdownItem
+                        active={sortBy === "name" && order === "asc"}
+                        onClick={() => {
+                          setSortBy("name");
+                          setOrder("asc");
+                        }}
+                      >
+                        Name (A-Z)
+                      </DropdownItem>
+
+                      <DropdownItem
+                        active={sortBy === "name" && order === "desc"}
+                        onClick={() => {
+                          setSortBy("name");
+                          setOrder("desc");
+                        }}
+                      >
+                        Name (Z-A)
+                      </DropdownItem>
+
+                      <DropdownItem
+                        active={sortBy === "size" && order === "desc"}
+                        onClick={() => {
+                          setSortBy("size");
+                          setOrder("desc");
+                        }}
+                      >
+                        Size (Largest)
+                      </DropdownItem>
+
+                      <DropdownItem
+                        active={sortBy === "size" && order === "asc"}
+                        onClick={() => {
+                          setSortBy("size");
+                          setOrder("asc");
+                        }}
+                      >
+                        Size (Smallest)
+                      </DropdownItem>
+                    </div>
+                  </div>
+
+                  <div className="relative group mt-1">
+                    <DropdownItem needCheck={false} className="justify-between w-full">
+                      <span>Type</span>
+                      <ChevronRight className="ui-icon-sm" />
+                    </DropdownItem>
+
+                    <div className="absolute left-full top-0 hidden min-w-[160px] rounded-xl border border-border/70 bg-background shadow-md group-hover:block">
+                      <DropdownItem
+                        active={type === ""}
+                        onClick={() => setType("")}
+                      >
+                        All
+                      </DropdownItem>
+                      <DropdownItem
+                        active={type === "image"}
+                        onClick={() => setType("image")}
+                      >
+                        Images
+                      </DropdownItem>
+                      <DropdownItem
+                        active={type === "application/pdf"}
+                        onClick={() => setType("application/pdf")}
+                      >
+                        Documents
                       </DropdownItem>
                     </div>
                   </div>

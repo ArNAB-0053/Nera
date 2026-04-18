@@ -7,7 +7,9 @@ export const uploadSchema = z.object({
 
 export const listFilesQuerySchema = z.object({
     folderId: z.uuid().nullable().optional(),
-    sortBy: z.enum(["name", "updatedAt", "size"]).optional().default("updatedAt"),
+    search: z.string().optional(),
+    type: z.string().optional(),
+    sortBy: z.enum(["name", "createdAt", "updatedAt", "size"]).optional().default("updatedAt"),
     order: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
@@ -43,6 +45,8 @@ export interface IFileRepository {
     findFilesByFolder(input: {
         userId: string;
         folderId?: string | null;
+        search?: string;
+        type?: string;
         sortBy: ListFilesQueryType["sortBy"];
         order: ListFilesQueryType["order"];
     }): Promise<PrismaFile[]>;

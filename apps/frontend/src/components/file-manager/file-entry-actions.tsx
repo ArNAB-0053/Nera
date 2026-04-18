@@ -42,15 +42,15 @@ export function FileEntryActions({
     <div
       ref={containerRef}
       className="relative flex justify-end"
-      onClick={(event) => event.stopPropagation()}
-      onKeyDown={(event) => event.stopPropagation()}
+      onClick={(event: ReactMouseEvent) => event.stopPropagation()}
+      onKeyDown={(event: React.KeyboardEvent) => event.stopPropagation()}
     >
       <Button
         type="button"
         variant="ghost"
         size="sm"
         aria-label={`Open actions for ${itemLabel}`}
-        onClick={(event) => {
+        onClick={(event: ReactMouseEvent) => {
           event.stopPropagation();
           setOpen((current) => !current);
         }}

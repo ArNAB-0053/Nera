@@ -166,7 +166,7 @@ export default function MeView() {
                     </Surface>
                   </div>
 
-                  <Surface variant="soft" padding="md" className="rounded-[var(--radius-xl)]">
+                  {/* <Surface variant="soft" padding="md" className="rounded-[var(--radius-xl)]">
                     <div className="flex items-start gap-3">
                       <div className="rounded-full bg-primary/10 p-2 text-primary">
                         <ShieldCheck className="size-4" />
@@ -180,7 +180,7 @@ export default function MeView() {
                         </Text>
                       </div>
                     </div>
-                  </Surface>
+                  </Surface> */}
                 </section>
 
                 <section className="space-y-4">

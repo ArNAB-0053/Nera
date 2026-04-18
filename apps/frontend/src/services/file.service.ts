@@ -14,6 +14,8 @@ export type FileListParams = {
   folderId: string | null;
   sortBy: FileSortBy;
   order: SortOrder;
+  search?: string;
+  type?: string;
 };
 
 export type UploadFilePayload = {
@@ -49,10 +51,12 @@ function getFilenameFromDisposition(disposition?: string) {
   return "download";
 }
 
-export async function getFiles({ folderId, sortBy, order }: FileListParams) {
+export async function getFiles({ folderId, sortBy, order, search, type }: FileListParams) {
   const { data } = await axiosInstance.get<ApiSuccess<FileRecord[]>>("/api/file", {
     params: {
       ...(folderId ? { folderId } : {}),
+      ...(search ? { search } : {}),
+      ...(type ? { type } : {}),
       sortBy,
       order,
     },
@@ -102,10 +106,10 @@ export async function deleteFile(fileId: string) {
   return data.data;
 }
 
-export function useFiles(folderId: string | null, sortBy: FileSortBy, order: SortOrder) {
+export function useFiles(folderId: string | null, sortBy: FileSortBy, order: SortOrder, search?: string, type?: string) {
   return useQuery({
-    queryKey: queryKeys.files(folderId, sortBy, order),
-    queryFn: () => getFiles({ folderId, sortBy, order }),
+    queryKey: queryKeys.files(folderId, sortBy, order, search, type),
+    queryFn: () => getFiles({ folderId, sortBy, order, search, type }),
   });
 }
 

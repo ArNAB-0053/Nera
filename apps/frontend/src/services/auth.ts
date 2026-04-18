@@ -65,12 +65,14 @@ export function useCreateSession(setMessage: (message: string) => void) {
 
 export function useCreateAccount(setMessage: (message: string) => void) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: registerUser,
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       setMessage(response.message);
-      router.push("/sign-in");
+      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+      router.push("/my-files");
     },
     onError: (error) => {
       setMessage(getApiErrorMessage(error));

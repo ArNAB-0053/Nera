@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ArrowLeft, Download, Upload } from "lucide-react";
 import { Button, Surface, Text } from "@nera/ui";
 import { getApiErrorMessage, type FileRecord } from "@/services/base";
-import { useDownloadFile, useUploadFile } from "@/services/file";
+import { useDownloadFile, useUploadFile } from "@/services/file.service";
 
 function prettyJson(value: unknown) {
   return JSON.stringify(value, null, 2);
@@ -16,7 +16,7 @@ export default function FileTestView() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [uploadedRecord, setUploadedRecord] = useState<FileRecord | null>(null);
-  const uploadMutation = useUploadFile();
+  const uploadMutation = useUploadFile(null);
   const downloadMutation = useDownloadFile();
 
   const handleUpload = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -30,7 +30,6 @@ export default function FileTestView() {
 
     try {
       const data = await uploadMutation.mutateAsync({
-        folderId,
         file: selectedFile,
       });
 

@@ -3,5 +3,8 @@
   "private": true,
   "scripts": {
     "postinstall": "pnpm --filter @nera/schemas build"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
   }
 }

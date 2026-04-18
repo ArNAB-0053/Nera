@@ -82,13 +82,15 @@ export const fileServices = {
 
     async listFiles(
         userId: string,
-        { folderId, sortBy, order }: ListFilesQueryType
+        { folderId, sortBy, order, search, type }: ListFilesQueryType
     ) {
         await this.assertFolderAccess(userId, folderId ?? null);
 
         const files = await repo.findFilesByFolder({
             userId,
             folderId: folderId ?? null,
+            ...(search !== undefined && { search }),
+            ...(type !== undefined && { type }),
             sortBy,
             order,
         });

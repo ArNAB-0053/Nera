@@ -85,6 +85,12 @@ export async function listFiles(request: FastifyRequest, reply: FastifyReply) {
         order: typeof request.query === "object" && request.query && "order" in request.query
             ? (request.query as Record<string, unknown>).order
             : undefined,
+        search: typeof request.query === "object" && request.query && "search" in request.query
+            ? (request.query as Record<string, unknown>).search
+            : undefined,
+        type: typeof request.query === "object" && request.query && "type" in request.query
+            ? (request.query as Record<string, unknown>).type
+            : undefined,
     });
 
     const files = await fileServices.listFiles(request.user.id, query);

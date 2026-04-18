@@ -3,11 +3,11 @@ import { BadRequestError, MESSAGES, UnauthorizedError } from "@nera/http";
 import { hashValue, verifyHash } from "@/helpers/crypto.js";
 import { authRepository } from "./auth.repository.js";
 import type { CreateUserData } from "./auth.schema.js";
-import type { PublicUser } from "@nera/db";
+import type { JwtPayload, PublicUser, SessionMeta } from "@nera/db";
 import crypto from "crypto"
 
 export const authService = {
-    async register(input: CreateUserData) {
+    async register(input: CreateUserData, meta: SessionMeta) {
         const exists = await userRepository.findByEmail(input.email)
 
         if(exists) throw new BadRequestError(MESSAGES.error.EMAIL_EXISTS)
@@ -22,10 +22,17 @@ export const authService = {
             totalStorageUsed: 0,
         }))
 
-        return user;
+        return this.createSession(
+            {
+                id: user.id,
+                email: user.email,
+                username: user.username
+            },
+            meta
+        )
     },
 
-    async login(identifier: string, password: string) {
+    async login(identifier: string, password: string, meta: SessionMeta) {
         const user = await authRepository.findAuthUserByIdentifier(identifier)
 
         if(!user) throw new BadRequestError(MESSAGES.error.EMAIL_NOT_EXISTS);
@@ -33,16 +40,14 @@ export const authService = {
         const isValid = await verifyHash(password, user.passwordHash)
 
         if(!isValid) throw new BadRequestError(MESSAGES.error.PASSWORD_NOT_MATCH);
-        const refreshToken = crypto.randomBytes(64).toString("hex")
-
-        return {
-            user: {
+        return this.createSession(
+            {
                 id: user.id,
                 email: user.email,
-                username: user?.username
+                username: user.username
             },
-            refreshToken
-        }
+            meta
+        )
 
     },
 
@@ -64,5 +69,21 @@ export const authService = {
         }
 
         throw new UnauthorizedError()
+    },
+
+    async createSession(user: JwtPayload, meta:SessionMeta) {
+        const refreshToken = crypto.randomBytes(64).toString("hex")
+
+        const tokenHash = await hashValue(refreshToken)
+
+        await authRepository.createRefreshToken({
+            userId: user.id,
+            tokenHash,
+            ipAddress: meta.ip ?? null,
+            userAgent: meta.userAgent ?? null,
+            expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
+        })
+
+        return { user, refreshToken }
     }
 }

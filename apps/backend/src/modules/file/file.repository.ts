@@ -81,12 +81,14 @@ export const fileRepository: IFileRepository = {
     });
   },
 
-  findFilesByFolder({ userId, folderId, sortBy, order }) {
+  findFilesByFolder({ userId, folderId, sortBy, order, search, type }) {
     return prisma.file.findMany({
       where: {
         userId,
         folderId: folderId ?? null,
         isDeleted: false,
+        ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
+        ...(type ? { mimeType: { contains: type, mode: "insensitive" } } : {}),
       },
       orderBy: {
         [sortBy]: order,
