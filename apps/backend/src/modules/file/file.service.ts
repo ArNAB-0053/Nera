@@ -1,4 +1,3 @@
-import { decryptFile, encryptFile } from "@/services/crypto.service.js";
 import type { IUploadType, ListFilesQueryType } from "./file.schema.js";
 import { randomUUID } from "crypto";
 import { deleteObject, getObject, uploadObject } from "@/services/storage.service.js";
@@ -28,7 +27,7 @@ export const fileServices = {
     // -----------------------------------------
     //                   UPLOAD
     // -----------------------------------------
-    async uploadFile({ userId, folderId, file }: IUploadType) {
+    async uploadFile({ userId, folderId, iv, authTag, salt, mimeType, file }: IUploadType) {
         await this.assertFolderAccess(userId, folderId);
         const fileSize = BigInt(file.size);
         const userStorage = await userRepository.findStorageUsageById(userId);
@@ -42,15 +41,13 @@ export const fileServices = {
         }
 
         const buffer = Buffer.from(new Uint8Array(await file.arrayBuffer()))
-
-        const { encrypted, iv, tag } = encryptFile(buffer)
         const storageFolder = folderId ?? "root"
 
         // storage path
         const path = `${userId}/${storageFolder}/${randomUUID()}`
 
         try {
-            await uploadObject(path, encrypted, file.type)
+            await uploadObject(path, buffer, "application/octet-stream")
 
             const payload: CreateFileData = {
                 userId,
@@ -58,10 +55,11 @@ export const fileServices = {
                 name: file.name,
                 size: fileSize,
                 storagePath: path,
-                mimeType: file.type,
+                mimeType,
                 isEncrypted: true,
-                encryptionIv: iv.toString("hex"),
-                encryptionTag: tag.toString("hex"),
+                iv,
+                authTag,
+                salt,
             }
 
             const saved = await repo.createFileWithStorageUpdate({
@@ -119,14 +117,11 @@ export const fileServices = {
 
         const encryptedBuffer = Buffer.concat(chunks)
 
-        const decrypted = decryptFile(
-            encryptedBuffer,
-            Buffer.from(file.encryptionIv!, "hex"),
-            Buffer.from(file.encryptionTag!, "hex")
-        )
-
         return {
-            buffer: decrypted,
+            encryptedFile: encryptedBuffer.toString("base64"),
+            iv: file.iv,
+            authTag: file.authTag,
+            salt: file.salt,
             mimeType: file.mimeType,
             name: file.name,
         };

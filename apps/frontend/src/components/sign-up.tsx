@@ -2,14 +2,26 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { RegisterSchema } from "@nera/schemas";
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import { Button, Surface, Text } from "@nera/ui";
 import { useCreateAccount } from "@/services/auth";
+import { generateRecoveryKey } from "@/lib/vault-crypto";
+import { useVault } from "@/providers/vault-provider";
 
 const SignUp = () => {
-  const [form, setForm] = useState({ email: "", username: "", password: "" });
+  const router = useRouter();
+  const { unlockVault } = useVault();
+  const [form, setForm] = useState({
+    email: "",
+    username: "",
+    password: "",
+    vaultPassword: "",
+    confirmVaultPassword: "",
+  });
   const [message, setMessage] = useState("");
+  const [recoveryKey, setRecoveryKey] = useState("");
   const registerMutation = useCreateAccount(setMessage);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,8 +34,20 @@ const SignUp = () => {
     const payload = {
       email: form.email,
       password: form.password,
+      recoveryKey: generateRecoveryKey(),
       ...(form.username.trim() ? { username: form.username.trim() } : {}),
     };
+
+    if (form.vaultPassword.length < 8) {
+      setMessage("Vault password must be at least 8 characters.");
+      return;
+    }
+
+    if (form.vaultPassword !== form.confirmVaultPassword) {
+      setMessage("Vault passwords do not match.");
+      return;
+    }
+
     const parsed = RegisterSchema.safeParse(payload);
 
     if (!parsed.success) {
@@ -31,7 +55,10 @@ const SignUp = () => {
       return;
     }
 
-    await registerMutation.mutateAsync(parsed.data);
+    const response = await registerMutation.mutateAsync(parsed.data);
+    unlockVault(form.vaultPassword);
+    setRecoveryKey(payload.recoveryKey);
+    setMessage(response.message);
   };
 
   return (
@@ -103,11 +130,58 @@ const SignUp = () => {
                 />
               </div>
 
+              <div className="space-y-2">
+                <label htmlFor="vaultPassword" className="field-label">
+                  Vault password
+                </label>
+                <input
+                  id="vaultPassword"
+                  name="vaultPassword"
+                  type="password"
+                  value={form.vaultPassword}
+                  onChange={handleChange}
+                  placeholder="Used only for local file encryption"
+                  className="field-input"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="confirmVaultPassword" className="field-label">
+                  Confirm vault password
+                </label>
+                <input
+                  id="confirmVaultPassword"
+                  name="confirmVaultPassword"
+                  type="password"
+                  value={form.confirmVaultPassword}
+                  onChange={handleChange}
+                  placeholder="Re-enter your vault password"
+                  className="field-input"
+                />
+              </div>
+
               <Button type="submit" size="lg" className="w-full" disabled={registerMutation.isPending}>
                 {registerMutation.isPending ? "Creating account..." : "Create account"}
                 <ArrowRight className="size-4" />
               </Button>
             </form>
+
+            {recoveryKey ? (
+              <Surface variant="soft" padding="md" className="rounded-[var(--radius-xl)]">
+                <Text as="p" variant="label">
+                  Recovery key
+                </Text>
+                <Text as="p" variant="body" className="mt-3 break-all font-mono">
+                  {recoveryKey}
+                </Text>
+                <Text as="p" variant="muted" className="mt-3">
+                  This key is shown only once and is used for account recovery, not file decryption.
+                </Text>
+                <Button type="button" className="mt-4 w-full" onClick={() => router.push("/my-files")}>
+                  Continue to vault
+                </Button>
+              </Surface>
+            ) : null}
 
             <Text as="p" variant="muted">
               Already have an account?{" "}

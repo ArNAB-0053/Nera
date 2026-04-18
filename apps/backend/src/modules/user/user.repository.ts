@@ -6,6 +6,7 @@ const PUBLIC_USER_SELECT = {
   email: true,
   username: true,
   isVerified: true,
+  twoFactorEnabled: true,
   createdAt: true,
   updatedAt: true,
 } as const;

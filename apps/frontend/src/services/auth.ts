@@ -10,12 +10,14 @@ import { getApiErrorMessage } from "./base";
 export type LoginPayload = {
   identifier: string;
   password: string;
+  otp?: string;
 };
 
 export type RegisterPayload = {
   email: string;
   username?: string;
   password: string;
+  recoveryKey: string;
 };
 
 export type RefreshPayload = {
@@ -24,6 +26,25 @@ export type RefreshPayload = {
 
 export type LogoutPayload = {
   message: string;
+};
+
+export type TwoFactorSetupPayload = {
+  password: string;
+};
+
+export type TwoFactorSetupResult = {
+  secret: string;
+  otpauthUrl: string;
+};
+
+export type TwoFactorEnablePayload = {
+  secret: string;
+  token: string;
+};
+
+export type TwoFactorDisablePayload = {
+  password: string;
+  token: string;
 };
 
 export async function registerUser(payload: RegisterPayload) {
@@ -46,6 +67,21 @@ export async function logoutUser() {
   return data;
 }
 
+export async function setupTwoFactor(payload: TwoFactorSetupPayload) {
+  const { data } = await axiosInstance.post<ApiSuccess<TwoFactorSetupResult>>("/api/auth/2fa/setup", payload);
+  return data;
+}
+
+export async function enableTwoFactor(payload: TwoFactorEnablePayload) {
+  const { data } = await axiosInstance.post<ApiSuccess<{ enabled: boolean }>>("/api/auth/2fa/enable", payload);
+  return data;
+}
+
+export async function disableTwoFactor(payload: TwoFactorDisablePayload) {
+  const { data } = await axiosInstance.post<ApiSuccess<{ enabled: boolean }>>("/api/auth/2fa/disable", payload);
+  return data;
+}
+
 export function useCreateSession(setMessage: (message: string) => void) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -64,7 +100,6 @@ export function useCreateSession(setMessage: (message: string) => void) {
 }
 
 export function useCreateAccount(setMessage: (message: string) => void) {
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -72,7 +107,6 @@ export function useCreateAccount(setMessage: (message: string) => void) {
     onSuccess: async (response) => {
       setMessage(response.message);
       await queryClient.invalidateQueries({ queryKey: queryKeys.me });
-      router.push("/my-files");
     },
     onError: (error) => {
       setMessage(getApiErrorMessage(error));
@@ -98,6 +132,48 @@ export function useLogoutSession() {
     mutationFn: logoutUser,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+    },
+  });
+}
+
+export function useSetupTwoFactor(setMessage: (message: string) => void) {
+  return useMutation({
+    mutationFn: setupTwoFactor,
+    onSuccess: (response) => {
+      setMessage(response.message);
+    },
+    onError: (error) => {
+      setMessage(getApiErrorMessage(error));
+    },
+  });
+}
+
+export function useEnableTwoFactor(setMessage: (message: string) => void) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: enableTwoFactor,
+    onSuccess: async (response) => {
+      setMessage(response.message);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+    },
+    onError: (error) => {
+      setMessage(getApiErrorMessage(error));
+    },
+  });
+}
+
+export function useDisableTwoFactor(setMessage: (message: string) => void) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: disableTwoFactor,
+    onSuccess: async (response) => {
+      setMessage(response.message);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+    },
+    onError: (error) => {
+      setMessage(getApiErrorMessage(error));
     },
   });
 }

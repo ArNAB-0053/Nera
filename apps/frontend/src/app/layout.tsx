@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@nera/ui";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
+import { VaultProvider } from "@/providers/vault-provider";
 import "./globals.css";
 
 const sans = Space_Grotesk({
@@ -34,7 +35,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <VaultProvider>{children}</VaultProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

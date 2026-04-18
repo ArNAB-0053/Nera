@@ -6,9 +6,11 @@ import { LoginSchema } from "@nera/schemas";
 import { ArrowRight, KeyRound, ShieldCheck } from "lucide-react";
 import { Button, Surface, Text } from "@nera/ui";
 import { useCreateSession } from "@/services/auth";
+import { useVault } from "@/providers/vault-provider";
 
 const SignIn = () => {
-  const [form, setForm] = useState({ identifier: "", password: "" });
+  const { unlockVault } = useVault();
+  const [form, setForm] = useState({ identifier: "", password: "", otp: "", vaultPassword: "" });
   const [message, setMessage] = useState("");
   const loginMutation = useCreateSession(setMessage);
 
@@ -27,6 +29,10 @@ const SignIn = () => {
     }
 
     await loginMutation.mutateAsync(parsed.data);
+
+    if (form.vaultPassword.trim()) {
+      unlockVault(form.vaultPassword);
+    }
   };
 
   return (
@@ -125,6 +131,36 @@ const SignIn = () => {
                   value={form.password}
                   onChange={handleChange}
                   placeholder="Enter your password"
+                  className="field-input"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="otp" className="field-label">
+                  OTP
+                </label>
+                <input
+                  id="otp"
+                  name="otp"
+                  type="text"
+                  value={form.otp}
+                  onChange={handleChange}
+                  placeholder="Required only if 2FA is enabled"
+                  className="field-input"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="vaultPassword" className="field-label">
+                  Vault password
+                </label>
+                <input
+                  id="vaultPassword"
+                  name="vaultPassword"
+                  type="password"
+                  value={form.vaultPassword}
+                  onChange={handleChange}
+                  placeholder="Optional: unlock file encryption for this session"
                   className="field-input"
                 />
               </div>

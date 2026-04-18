@@ -2,7 +2,11 @@ import type { CreateFileData, PrismaFile } from "@nera/db";
 import z from "zod";
 
 export const uploadSchema = z.object({
-    folderId: z.uuid().nullable().optional()
+    folderId: z.uuid().nullable().optional(),
+    iv: z.string().min(1, "IV is required"),
+    authTag: z.string().min(1, "Auth tag is required"),
+    salt: z.string().min(1, "Salt is required"),
+    mimeType: z.string().min(1, "Mime type is required"),
 })
 
 export const listFilesQuerySchema = z.object({
@@ -26,6 +30,10 @@ export interface IFileInput {
 export interface IUploadType {
     userId: string,
     folderId?: UploadSchemaType['folderId']
+    iv: string;
+    authTag: string;
+    salt: string;
+    mimeType: string;
     file: IFileInput
 }
 

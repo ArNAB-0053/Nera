@@ -3,6 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { queryKeys } from "@/lib/query-keys";
+import { useVault } from "@/providers/vault-provider";
+import { decryptFileWithVaultPassword, encryptFileWithVaultPassword } from "@/lib/vault-crypto";
 import type {
   ApiSuccess,
   FileRecord,
@@ -21,6 +23,7 @@ export type FileListParams = {
 export type UploadFilePayload = {
   folderId: string | null;
   file: File;
+  vaultPassword: string;
   onProgress?: (progress: number) => void;
 };
 
@@ -29,27 +32,18 @@ export type DownloadFileResult = {
   filename: string;
 };
 
+export type EncryptedDownloadResult = {
+  encryptedFile: string;
+  iv: string;
+  authTag: string;
+  salt: string;
+  mimeType?: string | null;
+  name: string;
+};
+
 export type DeleteFileResult = {
   id: string;
 };
-
-function getFilenameFromDisposition(disposition?: string) {
-  if (!disposition) {
-    return "download";
-  }
-
-  const utfMatch = disposition.match(/filename\*=UTF-8''([^;]+)/i);
-  if (utfMatch?.[1]) {
-    return decodeURIComponent(utfMatch[1]);
-  }
-
-  const plainMatch = disposition.match(/filename="([^"]+)"/i) ?? disposition.match(/filename=([^;]+)/i);
-  if (plainMatch?.[1]) {
-    return plainMatch[1].trim();
-  }
-
-  return "download";
-}
 
 export async function getFiles({ folderId, sortBy, order, search, type }: FileListParams) {
   const { data } = await axiosInstance.get<ApiSuccess<FileRecord[]>>("/api/file", {
@@ -66,13 +60,18 @@ export async function getFiles({ folderId, sortBy, order, search, type }: FileLi
 }
 
 export async function uploadFile(payload: UploadFilePayload) {
+  const encrypted = await encryptFileWithVaultPassword(payload.file, payload.vaultPassword);
   const formData = new FormData();
 
   if (payload.folderId) {
     formData.append("folderId", payload.folderId);
   }
 
-  formData.append("file", payload.file);
+  formData.append("iv", encrypted.iv);
+  formData.append("authTag", encrypted.authTag);
+  formData.append("salt", encrypted.salt);
+  formData.append("mimeType", encrypted.mimeType);
+  formData.append("file", encrypted.encryptedBlob, encrypted.originalName);
 
   const { data } = await axiosInstance.post<ApiSuccess<FileRecord>>("/api/file/upload", formData, {
     headers: {
@@ -91,14 +90,8 @@ export async function uploadFile(payload: UploadFilePayload) {
 }
 
 export async function downloadFile(fileId: string) {
-  const response = await axiosInstance.get<Blob>(`/api/file/${encodeURIComponent(fileId)}`, {
-    responseType: "blob",
-  });
-
-  return {
-    blob: response.data,
-    filename: getFilenameFromDisposition(response.headers["content-disposition"]),
-  } satisfies DownloadFileResult;
+  const { data } = await axiosInstance.get<ApiSuccess<EncryptedDownloadResult>>(`/api/file/${encodeURIComponent(fileId)}`);
+  return data.data;
 }
 
 export async function deleteFile(fileId: string) {
@@ -115,10 +108,16 @@ export function useFiles(folderId: string | null, sortBy: FileSortBy, order: Sor
 
 export function useUploadFile(folderId: string | null) {
   const queryClient = useQueryClient();
+  const { getVaultPassword } = useVault();
 
   return useMutation({
-    mutationFn: ({ file, onProgress }: Pick<UploadFilePayload, "file" | "onProgress">) =>
-      uploadFile({ folderId, file, onProgress }),
+    mutationFn: async ({ file, onProgress }: Pick<UploadFilePayload, "file" | "onProgress">) =>
+      uploadFile({
+        folderId,
+        file,
+        onProgress,
+        vaultPassword: await getVaultPassword(),
+      }),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["file", "list"] }),
@@ -145,7 +144,24 @@ export function useDeleteFile(folderId: string | null) {
 }
 
 export function useDownloadFile() {
+  const { getVaultPassword } = useVault();
+
   return useMutation({
-    mutationFn: downloadFile,
+    mutationFn: async (fileId: string) => {
+      const encrypted = await downloadFile(fileId);
+      const blob = await decryptFileWithVaultPassword({
+        password: await getVaultPassword(),
+        encryptedFile: encrypted.encryptedFile,
+        iv: encrypted.iv,
+        authTag: encrypted.authTag,
+        salt: encrypted.salt,
+        mimeType: encrypted.mimeType,
+      });
+
+      return {
+        blob,
+        filename: encrypted.name,
+      } satisfies DownloadFileResult;
+    },
   });
 }

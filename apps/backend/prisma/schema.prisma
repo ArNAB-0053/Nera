@@ -26,9 +26,12 @@ model User {
   email String @unique
   username String? @unique
   passwordHash String
+  recoveryKeyHash String?
   totalStorageUsed BigInt @default(0)
 
   isVerified Boolean @default(false)
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -71,8 +74,9 @@ model File {
 
   // security
   isEncrypted Boolean @default(true)
-  encryptionIv String?
-  encryptionTag String?
+  iv String?
+  authTag String?
+  salt String?
 
   // soft delete
   isDeleted Boolean @default(false)

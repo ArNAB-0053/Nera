@@ -8,6 +8,7 @@ export const authRepository: IAutoRepository = {
             data: {
                 email: data.email,
                 passwordHash: data.passwordHash,
+                ...(data.recoveryKeyHash !== undefined && { recoveryKeyHash: data.recoveryKeyHash }),
                 ...(data.username !== undefined && { username: data.username }),
             },
             select: {
@@ -15,6 +16,7 @@ export const authRepository: IAutoRepository = {
                 email: true,
                 username: true,
                 isVerified: true,
+                twoFactorEnabled: true,
                 createdAt: true,
                 updatedAt: true,
             },
@@ -32,9 +34,27 @@ export const authRepository: IAutoRepository = {
                 id: true,
                 email: true,
                 username: true,
-                passwordHash: true
+                passwordHash: true,
+                recoveryKeyHash: true,
+                twoFactorEnabled: true,
+                twoFactorSecret: true,
             }
         })
+    },
+
+    findAuthUserById(userId: string) {
+        return prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                email: true,
+                username: true,
+                passwordHash: true,
+                recoveryKeyHash: true,
+                twoFactorEnabled: true,
+                twoFactorSecret: true,
+            },
+        });
     },
 
     createRefreshToken(data: RefreshTokenInputType) {
@@ -57,5 +77,22 @@ export const authRepository: IAutoRepository = {
             where: {id},
             data: {revoked: true}
         })
-    }
+    },
+
+    updateTwoFactor(userId: string, input: { enabled: boolean; secret: string | null }) {
+        return prisma.user.update({
+            where: { id: userId },
+            data: {
+                twoFactorEnabled: input.enabled,
+                twoFactorSecret: input.secret,
+            },
+        }).then(() => undefined);
+    },
+
+    updatePasswordByRecoveryKey(userId: string, passwordHash: string) {
+        return prisma.user.update({
+            where: { id: userId },
+            data: { passwordHash },
+        }).then(() => undefined);
+    },
 }

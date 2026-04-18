@@ -18,6 +18,7 @@ export type PublicUser = {
   username?: string | null;
   totalStorageUsed: number;
   isVerified?: boolean;
+  twoFactorEnabled?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -38,8 +39,9 @@ export type FileRecord = {
   storagePath: string;
   mimeType?: string | null;
   isEncrypted: boolean;
-  encryptionIv?: string | null;
-  encryptionTag?: string | null;
+  iv?: string | null;
+  authTag?: string | null;
+  salt?: string | null;
   isDeleted: boolean;
   deletedAt?: string | null;
   createdAt: string;

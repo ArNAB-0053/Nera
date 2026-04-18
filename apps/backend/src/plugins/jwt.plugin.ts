@@ -4,6 +4,7 @@ import fastifyJwt from "@fastify/jwt";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin"
 import {UnauthorizedError} from "@nera/http"
+import { userRepository } from "@/modules/user/user.repository.js";
 
 export default fp(async function (fastify) {
     fastify.register(fastifyJwt, {
@@ -17,6 +18,11 @@ export default fp(async function (fastify) {
     fastify.decorate("authenticate", async function (request: FastifyRequest, reply: FastifyReply) {
         try {
             await request.jwtVerify()
+            const user = await userRepository.findById(request.user.id);
+
+            if (!user) {
+                throw new UnauthorizedError();
+            }
         } catch {
             throw new UnauthorizedError()
         }

@@ -1,19 +1,25 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   CheckCircle2,
   HardDrive,
+  Lock,
   Mail,
   ShieldCheck,
+  ShieldOff,
+  ShieldPlus,
+  Unlock,
   UserRound,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Avatar, AvatarFallback, Surface, Text } from "@nera/ui";
+import { Avatar, AvatarFallback, Button, Surface, Text } from "@nera/ui";
 import { formatBytes, formatDateLabel } from "@/lib/utils";
 import { getApiErrorMessage } from "@/services/base";
 import { useGetCurrentUser } from "@/services/user";
 import { AuthenticatedHeader } from "@/components/authenticated-header";
+import { useVault } from "@/providers/vault-provider";
+import { useDisableTwoFactor, useEnableTwoFactor, useSetupTwoFactor } from "@/services/auth";
 
 const MAX_USER_STORAGE_BYTES = 2 * 1024 * 1024 * 1024;
 const PLAN_NAME = "Free";
@@ -31,12 +37,60 @@ function getInitials(email: string, username?: string | null) {
 export default function MeView() {
   const router = useRouter();
   const meQuery = useGetCurrentUser();
+  const { isUnlocked, lockVault, unlockVault } = useVault();
+  const [message, setMessage] = useState("");
+  const [setupPassword, setSetupPassword] = useState("");
+  const [pendingSecret, setPendingSecret] = useState("");
+  const [pendingOtpUri, setPendingOtpUri] = useState("");
+  const [enableToken, setEnableToken] = useState("");
+  const [disablePassword, setDisablePassword] = useState("");
+  const [disableToken, setDisableToken] = useState("");
+  const setupTwoFactorMutation = useSetupTwoFactor(setMessage);
+  const enableTwoFactorMutation = useEnableTwoFactor(setMessage);
+  const disableTwoFactorMutation = useDisableTwoFactor(setMessage);
 
   useEffect(() => {
     if (meQuery.isError) {
       router.replace("/sign-in");
     }
   }, [meQuery.isError, router]);
+
+  const handleVaultUnlock = () => {
+    const password = window.prompt("Enter your vault password to unlock this browser session.");
+
+    if (!password) {
+      return;
+    }
+
+    unlockVault(password);
+    setMessage("Vault unlocked for this tab.");
+  };
+
+  const handleTwoFactorSetup = async () => {
+    const response = await setupTwoFactorMutation.mutateAsync({ password: setupPassword });
+    setPendingSecret(response.data.secret);
+    setPendingOtpUri(response.data.otpauthUrl);
+  };
+
+  const handleEnableTwoFactor = async () => {
+    await enableTwoFactorMutation.mutateAsync({
+      secret: pendingSecret,
+      token: enableToken,
+    });
+    setPendingSecret("");
+    setPendingOtpUri("");
+    setEnableToken("");
+    setSetupPassword("");
+  };
+
+  const handleDisableTwoFactor = async () => {
+    await disableTwoFactorMutation.mutateAsync({
+      password: disablePassword,
+      token: disableToken,
+    });
+    setDisablePassword("");
+    setDisableToken("");
+  };
 
   return (
     <main className="container-shell py-10">
@@ -208,9 +262,124 @@ export default function MeView() {
                           Verified: {meQuery.data.data.isVerified ? "Yes" : "No"}
                         </Text>
                         <Text as="p" variant="muted">
+                          2FA enabled: {meQuery.data.data.twoFactorEnabled ? "Yes" : "No"}
+                        </Text>
+                        <Text as="p" variant="muted">
+                          Vault session: {isUnlocked ? "Unlocked in memory" : "Locked"}
+                        </Text>
+                        <Text as="p" variant="muted">
                           Account created: {meQuery.data.data.createdAt ? formatDateLabel(meQuery.data.data.createdAt) : "Unavailable"}
                         </Text>
                       </div>
+                    </div>
+                  </Surface>
+
+                  <Surface variant="soft" padding="md" className="rounded-[var(--radius-xl)]">
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-primary/10 p-2 text-primary">
+                          {isUnlocked ? <Unlock className="size-4" /> : <Lock className="size-4" />}
+                        </div>
+                        <div className="space-y-1">
+                          <Text as="p" variant="label">
+                            Vault session
+                          </Text>
+                          <Text as="p" variant="muted">
+                            Your vault password stays only in memory and is cleared on refresh, close, or auto-lock.
+                          </Text>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        <Button type="button" variant="outline" onClick={handleVaultUnlock}>
+                          Unlock vault
+                        </Button>
+                        <Button type="button" variant="outline" onClick={lockVault}>
+                          Lock vault
+                        </Button>
+                      </div>
+                    </div>
+                  </Surface>
+
+                  <Surface variant="soft" padding="md" className="rounded-[var(--radius-xl)]">
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-primary/10 p-2 text-primary">
+                          <ShieldPlus className="size-4" />
+                        </div>
+                        <div className="space-y-1">
+                          <Text as="p" variant="label">
+                            Two-factor authentication
+                          </Text>
+                          <Text as="p" variant="muted">
+                            Set up TOTP with your authenticator app, then use a 6-digit code during sign-in.
+                          </Text>
+                        </div>
+                      </div>
+
+                      {!meQuery.data.data.twoFactorEnabled ? (
+                        <div className="space-y-3">
+                          <input
+                            type="password"
+                            value={setupPassword}
+                            onChange={(event) => setSetupPassword(event.target.value)}
+                            placeholder="Confirm your account password"
+                            className="field-input"
+                          />
+                          <Button type="button" variant="outline" onClick={() => void handleTwoFactorSetup()} disabled={setupTwoFactorMutation.isPending || !setupPassword}>
+                            {setupTwoFactorMutation.isPending ? "Preparing..." : "Prepare 2FA"}
+                          </Button>
+
+                          {pendingSecret ? (
+                            <div className="space-y-3 rounded-[var(--radius-xl)] border border-border/60 bg-background/50 p-4">
+                              <Text as="p" variant="label">
+                                Authenticator secret
+                              </Text>
+                              <Text as="p" variant="body" className="break-all font-mono">
+                                {pendingSecret}
+                              </Text>
+                              {pendingOtpUri ? (
+                                <Text as="p" variant="muted" className="break-all">
+                                  {pendingOtpUri}
+                                </Text>
+                              ) : null}
+                              <input
+                                type="text"
+                                value={enableToken}
+                                onChange={(event) => setEnableToken(event.target.value)}
+                                placeholder="Enter the 6-digit code from your app"
+                                className="field-input"
+                              />
+                              <Button type="button" onClick={() => void handleEnableTwoFactor()} disabled={enableTwoFactorMutation.isPending || !enableToken}>
+                                {enableTwoFactorMutation.isPending ? "Enabling..." : "Enable 2FA"}
+                              </Button>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <ShieldOff className="size-4" />
+                            Two-factor authentication is active.
+                          </div>
+                          <input
+                            type="password"
+                            value={disablePassword}
+                            onChange={(event) => setDisablePassword(event.target.value)}
+                            placeholder="Confirm your account password"
+                            className="field-input"
+                          />
+                          <input
+                            type="text"
+                            value={disableToken}
+                            onChange={(event) => setDisableToken(event.target.value)}
+                            placeholder="Enter your current 6-digit code"
+                            className="field-input"
+                          />
+                          <Button type="button" variant="outline" onClick={() => void handleDisableTwoFactor()} disabled={disableTwoFactorMutation.isPending || !disablePassword || !disableToken}>
+                            {disableTwoFactorMutation.isPending ? "Disabling..." : "Disable 2FA"}
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </Surface>
                 </section>
@@ -227,6 +396,17 @@ export default function MeView() {
                 </section>
               </div>
             </Surface>
+
+            {message ? (
+              <Surface variant="soft" padding="md" className="rounded-[var(--radius-xl)]">
+                <Text as="p" variant="label">
+                  Security status
+                </Text>
+                <Text as="p" variant="body" className="mt-3">
+                  {message}
+                </Text>
+              </Surface>
+            ) : null}
           </div>
         </div>
       ) : (

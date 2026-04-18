@@ -23,7 +23,7 @@ export async function uploadFile(request: FastifyRequest, reply: FastifyReply) {
 
         if (!data) throw new BadRequestError(MESSAGES.error.FILE_NEEDED)
 
-        const { file, filename, mimetype } = data;
+        const { file, filename } = data;
 
         const chunks: Buffer[] = [];
         for await (const chunk of file) {
@@ -37,31 +37,44 @@ export async function uploadFile(request: FastifyRequest, reply: FastifyReply) {
             throw new BadRequestError(MESSAGES.error.FILE_LARGE);
         }
 
+        const rawFolderId = parseMultipartFieldValue(data.fields, "folderId");
+        const rawIv = parseMultipartFieldValue(data.fields, "iv");
+        const rawAuthTag = parseMultipartFieldValue(data.fields, "authTag");
+        const rawSalt = parseMultipartFieldValue(data.fields, "salt");
+        const rawMimeType = parseMultipartFieldValue(data.fields, "mimeType");
+
         const allowedTypes = [
             "image/png",
             "image/jpeg",
             "application/pdf",
         ];
 
-        if (!allowedTypes.includes(mimetype)) {
+        if (typeof rawMimeType !== "string" || !allowedTypes.includes(rawMimeType)) {
             throw new BadRequestError(MESSAGES.error.INVALID_FILE_TYPE);
         }
 
-        const rawFolderId = parseMultipartFieldValue(data.fields, "folderId");
-        const { folderId } = uploadSchema.parse({
+        const parsed = uploadSchema.parse({
             folderId: typeof rawFolderId === "string" && rawFolderId.trim().length > 0
                 ? rawFolderId.trim()
                 : null,
+            iv: rawIv,
+            authTag: rawAuthTag,
+            salt: rawSalt,
+            mimeType: rawMimeType,
         });
 
         const result = await fileServices.uploadFile({
             userId,
-            folderId,
+            folderId: parsed.folderId,
+            iv: parsed.iv,
+            authTag: parsed.authTag,
+            salt: parsed.salt,
+            mimeType: parsed.mimeType,
             file: {
                 arrayBuffer: async () => buffer,
                 name: filename,
                 size: buffer.length,
-                type: mimetype,
+                type: "application/octet-stream",
             },
         });
 
@@ -101,15 +114,7 @@ export async function downloadFile(request: FastifyRequest, reply: FastifyReply)
     const { id } = request.params as { id: string };
 
     const result = await fileServices.downloadFile(request.user.id, id);
-
-    reply
-        .header("Content-Type", result.mimeType || "application/octet-stream")
-        .header(
-            "Content-Disposition",
-            `attachment; filename*=UTF-8''${encodeURIComponent(result.name)}`
-        )
-        .header("Content-Length", result.buffer.length)
-        .send(result.buffer);
+    return reply.ok(result, MESSAGES.success.FILE_FETCHED);
 }
 
 export async function deleteFile(request: FastifyRequest, reply: FastifyReply) {

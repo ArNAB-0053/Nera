@@ -17,6 +17,7 @@ export type PublicUser = {
   id: string;
   email: string;
   username?: string | null;
+  twoFactorEnabled?: boolean;
   isVerified?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -31,12 +32,14 @@ export type TestRecord = {
 export type LoginPayload = {
   identifier: string;
   password: string;
+  otp?: string;
 };
 
 export type RegisterPayload = {
   email: string;
   username?: string;
   password: string;
+  recoveryKey: string;
 };
 
 export type RefreshPayload = {

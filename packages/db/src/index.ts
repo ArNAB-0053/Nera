@@ -18,6 +18,7 @@ export type DbPublicUser = {
   email: string;
   username: string | null;
   isVerified: boolean;
+  twoFactorEnabled: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
