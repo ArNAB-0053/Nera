@@ -16,6 +16,7 @@ export type PublicUser = {
   id: string;
   email: string;
   username?: string | null;
+  totalStorageUsed: number;
   isVerified?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -26,6 +27,51 @@ export type TestRecord = {
   name: string;
   createdAt: string;
 };
+
+export type FileRecord = {
+  id: string;
+  userId: string;
+  folderId?: string | null;
+  name: string;
+  description?: string | null;
+  size: number;
+  storagePath: string;
+  mimeType?: string | null;
+  isEncrypted: boolean;
+  encryptionIv?: string | null;
+  encryptionTag?: string | null;
+  isDeleted: boolean;
+  deletedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FolderRecord = {
+  id: string;
+  userId: string;
+  name: string;
+  parentId?: string | null;
+  isRoot: boolean;
+  size: number;
+  isDeleted: boolean;
+  deletedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FolderBreadcrumb = {
+  id: string | null;
+  name: string;
+};
+
+export type FolderViewRecord = {
+  currentFolder: FolderRecord | null;
+  breadcrumbs: FolderBreadcrumb[];
+  folders: FolderRecord[];
+};
+
+export type FileSortBy = "updatedAt" | "name" | "size";
+export type SortOrder = "asc" | "desc";
 
 export function getApiErrorMessage(error: unknown) {
   const axiosError = error as AxiosError<ApiFailure>;

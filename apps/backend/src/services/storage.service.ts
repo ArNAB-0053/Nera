@@ -33,7 +33,7 @@ export async function uploadObject(path: string, buffer: Buffer, mimeType?: stri
 // download file
 /**
  * 
- * @param path - storahe path -> userId/folderId/uuid
+ * @param path - storage path -> userId/folder-or-root/uuid
  * @returns 
  */
 export async function getObject(path: string) {
@@ -43,7 +43,7 @@ export async function getObject(path: string) {
 // delete file
 /**
  * 
- * @param path - storahe path -> userId/folderId/uuid
+ * @param path - storage path -> userId/folder-or-root/uuid
  * @returns 
  */
 export async function deleteObject(path: string) {

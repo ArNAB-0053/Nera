@@ -22,6 +22,10 @@ export type RefreshPayload = {
   message: string;
 };
 
+export type LogoutPayload = {
+  message: string;
+};
+
 export async function registerUser(payload: RegisterPayload) {
   const { data } = await axiosInstance.post<ApiSuccess<PublicUser>>("/api/auth/register", payload);
   return data;
@@ -37,6 +41,11 @@ export async function refreshSession() {
   return data;
 }
 
+export async function logoutUser() {
+  const { data } = await axiosInstance.post<ApiSuccess<LogoutPayload>>("/api/auth/logout");
+  return data;
+}
+
 export function useCreateSession(setMessage: (message: string) => void) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -46,7 +55,7 @@ export function useCreateSession(setMessage: (message: string) => void) {
     onSuccess: async (response) => {
       setMessage(response.message);
       await queryClient.invalidateQueries({ queryKey: queryKeys.me });
-      router.push("/me");
+      router.push("/my-files");
     },
     onError: (error) => {
       setMessage(getApiErrorMessage(error));
@@ -56,12 +65,14 @@ export function useCreateSession(setMessage: (message: string) => void) {
 
 export function useCreateAccount(setMessage: (message: string) => void) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: registerUser,
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       setMessage(response.message);
-      router.push("/sign-in");
+      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+      router.push("/my-files");
     },
     onError: (error) => {
       setMessage(getApiErrorMessage(error));
@@ -74,6 +85,17 @@ export function useCreateSessionRefresh() {
 
   return useMutation({
     mutationFn: refreshSession,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+    },
+  });
+}
+
+export function useLogoutSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: logoutUser,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.me });
     },

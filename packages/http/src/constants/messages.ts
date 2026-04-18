@@ -4,7 +4,10 @@ export const MESSAGES = {
     LOGIN_SUCCESS: "Login successful",
     PROFILE_FETCHED: "Profile fetched successfully",
     FILE_UPLOADED: "File uploaded successfully",
-    FOLDER_CREATED: "Folder created successfully"
+    FILE_DELETED: "File deleted successfully",
+    FOLDER_CREATED: "Folder created successfully",
+    FOLDER_VIEW_FETCHED: "Folder view fetched successfully",
+    FILE_LIST_FETCHED: "Files fetched successfully"
   },
 
   error: {
@@ -15,11 +18,15 @@ export const MESSAGES = {
     PASSWORD_NOT_MATCH: "Password didn't match",
     USER_NOT_FOUND: "User not found",
     PROFILE_FETCH_FAILED: "Unable to fetch your profile",
+    FOLDER_NOT_FOUND: "Folder not found",
+    FOLDER_EXISTS: "Folder already exists in this location",
+    FILE_NOT_FOUND: "File not found",
 
     // File
     FILE_NEEDED: 'File is required',
     FILE_LARGE: 'File too large',
-    INVALID_FILE_TYPE: 'Invalid file type'
+    INVALID_FILE_TYPE: 'Invalid file type',
+    STORAGE_LIMIT_EXCEEDED: "Storage limit exceeded"
   },
 
 } as const;

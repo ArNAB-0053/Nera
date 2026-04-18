@@ -1,8 +1,6 @@
 import Link from "next/link";
 import {
-  ArrowRight,
   Check,
-  ChevronRight,
   LockKeyhole,
   Moon,
   ShieldCheck,
@@ -10,6 +8,7 @@ import {
   Workflow,
 } from "lucide-react";
 import { Button, Surface, Text, ThemeToggle } from "@nera/ui";
+import { LandingFooterCta, LandingHeaderActions, LandingPrimaryCta } from "@/components/landing-auth-actions";
 
 const features = [
   {
@@ -89,15 +88,7 @@ export default function HomePage() {
 
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Button asChild variant="outline" size="sm">
-              <Link href="/sign-in">Sign in</Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/sign-up">
-                Start free
-                <ChevronRight className="size-4" />
-              </Link>
-            </Button>
+            <LandingHeaderActions />
           </div>
         </div>
       </header>
@@ -126,12 +117,7 @@ export default function HomePage() {
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row">
-              <Button asChild variant="hero" size="lg">
-                <Link href="/sign-up">
-                  Create your vault
-                  <ArrowRight className="size-4" />
-                </Link>
-              </Button>
+              <LandingPrimaryCta />
               <Button asChild variant="outline" size="lg">
                 <Link href="#compare">See how it compares</Link>
               </Button>
@@ -362,12 +348,7 @@ export default function HomePage() {
               Establish a secure workspace for your most sensitive files with a vault built for privacy, control, and long-term trust.
             </Text>
           </div>
-          <Button asChild size="lg">
-            <Link href="/sign-up">
-              Create your secure vault
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
+          <LandingFooterCta />
         </Surface>
       </section>
 
