@@ -1,4 +1,6 @@
-# Nera
+<div align="center">
+   <img width="300" height="142" alt="ascii-art-text (4)" src="https://github.com/user-attachments/assets/231879b7-dd54-4a78-8db3-eb3f098628cf" />
+</div>
 
 ## Project Overview
 
